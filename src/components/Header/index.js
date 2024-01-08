@@ -1,13 +1,16 @@
+import { useNavigation } from "@react-navigation/native";
 import React from "react";
-import { SafeAreaView, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { SafeAreaView, Text, TouchableOpacity, StyleSheet, View, Image } from "react-native";
 import Icon from 'react-native-vector-icons/MaterialIcons'
+import { DrawerItemList } from "@react-navigation/drawer";
 
 
 export default function Header({ title }) {
+    const navigation = useNavigation();
     return (
         <SafeAreaView style={styles.container}>
-            <TouchableOpacity >
-                <Icon name='menu' size={35} ></Icon>
+            <TouchableOpacity onPress={() => navigation.openDrawer()}>
+                <Icon name='menu' size={35} marginLeft={15} color={'rgba(255,255,255,1)'}></Icon>
             </TouchableOpacity>
             {title && (<Text style={styles.header}>{title}</Text>)}
         </SafeAreaView>
@@ -19,13 +22,12 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "flex-start",
-        backgroundColor: 'rgba(115,144,114,.8)',
-        marginTop: 30,
-        marginLeft: 15,
-        marginBottom: 15
+        backgroundColor: '#3a4d39',
+        height: 50
     },
-    header:{
+    header: {
         fontSize: 22,
-        marginLeft: 10,
+        marginLeft: 20,
+        color: 'rgba(255,255,255,1)'
     }
 })
