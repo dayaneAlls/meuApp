@@ -17,50 +17,54 @@ export default function SignUp() {
     }
     return (
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : ''} enabled>
-            <ImageBackground source={require('../../img/1.jpg')} style={styles.imageBackground}>
+            <ImageBackground
+                source={require('../../img/1.jpg')} style={styles.imageBackground}>
                 <View style={styles.viewInput}>
                     <Image source={require('../../img/logo1.png')} style={{
-                        width: 130, height: 118, marginBottom: 20,
+                        width: 130,
+                        height: 118
                     }}></Image>
-                    <TextInput style={styles.input}
-                        placeholder='Nome'
-                        value={nome}
-                        onChangeText={(text) => setNome(text)}
-                        placeholderTextColor='#3a4d39'>
-                    </TextInput>
+                    <View>
+                        <TextInput style={styles.input}
+                            placeholder='Nome'
+                            value={nome}
+                            onChangeText={(text) => setNome(text)}
+                            placeholderTextColor='#3a4d39'>
+                        </TextInput>
 
-                    <TextInput style={styles.input}
-                        placeholder='E-mail'
-                        value={email}
-                        onChangeText={(text) => setEmail(text)}
-                        placeholderTextColor='#3a4d39'>
-                    </TextInput>
+                        <TextInput style={styles.input}
+                            placeholder='E-mail'
+                            value={email}
+                            onChangeText={(text) => setEmail(text)}
+                            placeholderTextColor='#3a4d39'>
+                        </TextInput>
 
-                    <TextInput style={styles.input}
-                        placeholder='Senha'
-                        value={password}
-                        onChangeText={(text) => setPassword(text)}
-                        placeholderTextColor='#3a4d39'
-                        secureTextEntry={hidePass}>
+                        <TextInput style={styles.input}
+                            placeholder='Senha'
+                            value={password}
+                            onChangeText={(text) => setPassword(text)}
+                            placeholderTextColor='#3a4d39'
+                            secureTextEntry={hidePass}>
 
-                    </TextInput>
-                    <TouchableOpacity onPress={() => setHidePass(!hidePass)}>
-                        {hidePass ? <MaterialIcons name='visibility' style={styles.iconPlacePassword} /> : <MaterialIcons name='visibility-off' style={styles.iconPlacePassword} />}
-                    </TouchableOpacity>
+                        </TextInput>
+                        <TouchableOpacity onPress={() => setHidePass(!hidePass)}>
+                            {hidePass ? <MaterialIcons name='visibility' style={styles.iconPlacePassword} /> : <MaterialIcons name='visibility-off' style={styles.iconPlacePassword} />}
+                        </TouchableOpacity>
+                    </View>
                     <TouchableOpacity style={styles.btnCadastrar} onPress={handleSignUp}>
                         {loadingAuth ? (<ActivityIndicator size={20} color={'#fff'} />) :
                             (<Text style={styles.txtCadastrar}>CADASTRAR</Text>)}
                     </TouchableOpacity>
                 </View>
-            </ImageBackground>
+            </ImageBackground >
         </KeyboardAvoidingView>
     )
 }
 
 const styles = StyleSheet.create({
     container: {
-        justifyContent: 'center',
-        alignItems: 'center',
+        jflex: 1,
+        justifyContent: 'center'
     },
     btnCadastrar: {
         backgroundColor: 'rgba(58,77,57,1)',
@@ -104,13 +108,16 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(115,144,114,.6)',
         justifyContent: 'center',
         alignItems: 'center',
-        height: '100%',
-        width: '100%'
+        justifyContent: 'center',
+        alignItems: 'center'
 
     },
     imageBackground: {
+        flex: 1,
+        resizeMode: "cover",
         justifyContent: "center",
         alignItems: "center",
+        opacity: 0.8
 
     },
 })

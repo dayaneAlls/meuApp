@@ -8,12 +8,12 @@ export default function DrawerLog(props) {
             <View style={styles.container}>
                 <Image source={require('../../img/logo1.png')} style={{ resizeMode: 'contain' }}></Image>
                 <Text style={{ color: '#f0f2ff', fontSize: 20 }}>Bem-vindo!</Text>
-                <Text style={{ color: '#f0f2ff', fontSize: 18, fontWeight: 'bold', marginBottom: 30 }}>Usuário!</Text>
+                <Text style={{ color: '#f0f2ff', fontSize: 18, fontWeight: 'bold', marginBottom: 30 }}>Usuário</Text>
             </View>
             <DrawerItemList {...props} />
-            <DrawerItem
+            <DrawerItem {...props}
                 label='Sair'
-                labelStyle={{ fontSize: 18, justifyContent: 'flex-end', alignItems: 'flex-end' }}
+
                 onPress={() => alert('clicou')}>
             </DrawerItem>
 

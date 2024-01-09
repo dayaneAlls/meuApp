@@ -15,8 +15,7 @@ export default function SignIn() {
                         width: 130,
                         height: 118
                     }}></Image>
-
-                    <View style={styles.viewInput}>
+                    <View>
                         <TextInput style={styles.input} placeholder='Email' placeholderTextColor='rgba(255,255,255,.5)'></TextInput>
                         <MaterialIcons name='person' style={styles.iconPlace} />
 

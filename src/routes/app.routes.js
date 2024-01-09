@@ -17,11 +17,12 @@ function AppRoutes() {
             screenOptions={{
                 headerShown: false,
                 drawerStyle: {
-                    backgroundColor: 'rgba(58,77,57,1)',
+                    backgroundColor: '#739072',
                     paddingTop: 20,
                 },
-                drawerActiveBackgroundColor: 'rgba(115,144,114,.8)',
-                drawerItemStyle: { borderColor: 'rgba(255,255,255,1)', borderBottomWidth: 1, height: 55, },
+                drawerActiveBackgroundColor: '#4F6F52',
+                drawerInactiveBackgroundColor: '#3A4D39',
+                drawerItemStyle: { borderRadius: 27, height: 55, },
                 drawerActiveTintColor: '#f0f2ff',
                 drawerInactiveTintColor: '#f0f2ff',
                 drawerLabelStyle: { fontSize: 18 },
@@ -29,12 +30,18 @@ function AppRoutes() {
             <AppDrawer.Screen
                 name="Home"
                 component={Home}
-                options={{ title: 'Pesquisar Plantas', drawerIcon: () => { return <Icon name="search" color={'#f0f2ff'} size={20} /> } }}>
+                options={{
+                    title: 'Pesquisar Plantas',
+                    drawerIcon: () => { return <Icon name="search" color={'#f0f2ff'} size={20} />}
+                }}>
             </AppDrawer.Screen>
             <AppDrawer.Screen
                 name="Sobre"
                 component={Sobre}
-                options={{ title: 'Minhas Plantas', drawerIcon: () => { return <Icon name="settings" color={'#f0f2ff'} size={20} /> } }}>
+                options={{
+                    title: 'Minhas Plantas',
+                    drawerIcon: () => { return <Icon name="settings" color={'#f0f2ff'} size={20} /> }
+                }}>
             </AppDrawer.Screen>
         </AppDrawer.Navigator>
     )
