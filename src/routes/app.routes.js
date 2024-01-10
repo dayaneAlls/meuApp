@@ -3,7 +3,7 @@ import { createDrawerNavigator } from "@react-navigation/drawer";
 import Icon from 'react-native-vector-icons/MaterialIcons'
 
 import Home from '../pages/Home';
-import Sobre from '../pages/Sobre';
+import MinhasPlantas from '../pages/MinhasPlantas';
 import DrawerLogo from '../components/DrawerLogo';
 
 
@@ -28,18 +28,16 @@ function AppRoutes() {
                 drawerLabelStyle: { fontSize: 18 },
             }}>
             <AppDrawer.Screen
-                name="Home"
+                name="Pesquisar Plantas"
                 component={Home}
                 options={{
-                    title: 'Pesquisar Plantas',
-                    drawerIcon: () => { return <Icon name="search" color={'#f0f2ff'} size={20} />}
+                    drawerIcon: () => { return <Icon name="search" color={'#f0f2ff'} size={20} /> }
                 }}>
             </AppDrawer.Screen>
             <AppDrawer.Screen
-                name="Sobre"
-                component={Sobre}
+                name="Minhas Plantas"
+                component={MinhasPlantas}
                 options={{
-                    title: 'Minhas Plantas',
                     drawerIcon: () => { return <Icon name="settings" color={'#f0f2ff'} size={20} /> }
                 }}>
             </AppDrawer.Screen>

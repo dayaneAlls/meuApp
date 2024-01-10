@@ -1,8 +1,7 @@
 import { useNavigation } from "@react-navigation/native";
 import React from "react";
-import { SafeAreaView, Text, TouchableOpacity, StyleSheet, View, Image } from "react-native";
+import { SafeAreaView, Text, TouchableOpacity, StyleSheet } from "react-native";
 import Icon from 'react-native-vector-icons/MaterialIcons'
-import { DrawerItemList } from "@react-navigation/drawer";
 
 
 export default function Header({ title }) {

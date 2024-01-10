@@ -21,8 +21,7 @@ export default function SignUp() {
                 source={require('../../img/1.jpg')} style={styles.imageBackground}>
                 <View style={styles.viewInput}>
                     <Image source={require('../../img/logo1.png')} style={{
-                        width: 130,
-                        height: 118
+                        width: 130, height: 118, marginTop: -80, marginBottom: 35,
                     }}></Image>
                     <View>
                         <TextInput style={styles.input}
@@ -67,7 +66,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center'
     },
     btnCadastrar: {
-        backgroundColor: 'rgba(58,77,57,1)',
+        backgroundColor: '#3a4d39',
         borderColor: 'rgba(255,255,255,.5)',
         borderWidth: 0.40,
         borderRadius: 24,
@@ -99,7 +98,7 @@ const styles = StyleSheet.create({
     },
     iconPlacePassword: {
         position: 'absolute',
-        right: -145,
+        right: 15,
         top: -45,
         fontSize: 25,
         color: '#3a4d39'
@@ -108,12 +107,14 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(115,144,114,.6)',
         justifyContent: 'center',
         alignItems: 'center',
-        justifyContent: 'center',
-        alignItems: 'center'
+        alignItems: 'center',
+        width: '100%',
+        height: '100%'
 
     },
     imageBackground: {
-        flex: 1,
+        height: '100%',
+        width: '100%',
         resizeMode: "cover",
         justifyContent: "center",
         alignItems: "center",
