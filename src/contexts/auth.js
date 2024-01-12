@@ -7,24 +7,24 @@ import { endAsyncEvent } from "react-native/Libraries/Performance/Systrace";
 export const AuthContext = createContext({});
 
 function AuthProvider({ children }) {
-    const [user, setUser] = useState({ nome: 'matheus' });
+    const [user, setUser] = useState(null);
     const [loadingAuth, setLoadingAuth] = useState(false);
 
     const navigation = useNavigation();
 
     async function signUp(email, password, user) {
         setLoadingAuth(true);
-        
-        const usuario = firebase.auth().createUserWithEmailAndPassword( email, password)
+
+        const usuario = firebase.auth().createUserWithEmailAndPassword(email, password)
             .then((usuario) => {
                 setLoadingAuth(false);
                 navigation.goBack();
 
             })
-            .catch ((err) =>{
-            console.log('erro ao cadastrar', err)
-            setLoadingAuth(false);
-        })
+            .catch((err) => {
+                console.log('erro ao cadastrar', err)
+                setLoadingAuth(false);
+            })
     }
 
     async function singOut() {
@@ -34,9 +34,15 @@ function AuthProvider({ children }) {
 
 
     async function signIn(email, password) {
+        setLoadingAuth(true);
         const usuario = firebase.auth().signInWithEmailAndPassword(email, password)
             .then((usuario) => {
-
+                setUser(usuario.user.uid)
+                setLoadingAuth(false);
+            })
+            .catch((err) => {
+                alert('Usuário ou senha incorretos!')
+                setLoadingAuth(false);
             })
 
     }
