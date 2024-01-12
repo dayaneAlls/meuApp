@@ -12,7 +12,7 @@ export default function SignUp() {
     const [password, setPassword] = useState('');
 
     function handleSignUp() {
-        if (email === '' || password === '') {
+        if (user=== '' || email === '' || password === '') {
             alert('Por favor preencha todos os campos!')
             return;
         }
