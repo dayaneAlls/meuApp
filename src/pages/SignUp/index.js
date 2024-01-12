@@ -7,13 +7,16 @@ export default function SignUp() {
     const [hidePass, setHidePass] = useState(true);
 
     const { signUp, loadingAuth } = useContext(AuthContext);
-    const [nome, setNome] = useState('');
+    const [user, setUser] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
     function handleSignUp() {
-        if (nome === '' || email === '' || password === '') return;
-        signUp(email, password, nome);
+        if (email === '' || password === '') {
+            alert('Por favor preencha todos os campos!')
+            return;
+        }
+        signUp(email, password, user);
     }
     return (
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : ''} enabled>
@@ -26,8 +29,8 @@ export default function SignUp() {
                     <View>
                         <TextInput style={styles.input}
                             placeholder='Nome'
-                            value={nome}
-                            onChangeText={(text) => setNome(text)}
+                            value={user}
+                            onChangeText={(text) => setUser(text)}
                             placeholderTextColor='#3a4d39'>
                         </TextInput>
 
@@ -51,7 +54,7 @@ export default function SignUp() {
                         </TouchableOpacity>
                     </View>
                     <TouchableOpacity style={styles.btnCadastrar} onPress={handleSignUp}>
-                        {loadingAuth ? (<ActivityIndicator size={20} color={'#fff'} />) :
+                        {loadingAuth ? (<ActivityIndicator size={50} color={'#fff'} />) :
                             (<Text style={styles.txtCadastrar}>CADASTRAR</Text>)}
                     </TouchableOpacity>
                 </View>

@@ -1,13 +1,26 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { View, Text, StyleSheet, ImageBackground, Image, TouchableOpacity, TextInput } from 'react-native';
 import { useNavigation } from "@react-navigation/native";
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import { AuthContext } from "../../contexts/auth";
 
 import firebase from "../../services/FIrebaseConnection";
 
 export default function SignIn() {
+
+    const { signIn, loadingAuth } = useContext(AuthContext);
     const navigation = useNavigation();
     const [hidePass, setHidePass] = useState(true);
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+
+    function handleSignIn() {
+        if ( email === '' || password === '') {
+            alert('Por favor preencha todos os campos!')
+            return;
+        }
+        signIn(email,password)
+    }
     return (
         <View style={styles.container}>
             <ImageBackground
@@ -18,16 +31,29 @@ export default function SignIn() {
                         height: 118
                     }}></Image>
                     <View>
-                        <TextInput style={styles.input} placeholder='Email' placeholderTextColor='rgba(255,255,255,.5)'></TextInput>
+                        <TextInput
+                            style={styles.input}
+                            placeholder='Email'
+                            placeholderTextColor='rgba(255,255,255,.5)'
+                            value={email}
+                            onChangeText={(text) => setEmail(text)}
+                        />
                         <MaterialIcons name='person' style={styles.iconPlace} />
 
-                        <TextInput style={styles.input} placeholder="Senha" placeholderTextColor='rgba(255,255,255,.5)' secureTextEntry={hidePass}></TextInput>
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Senha"
+                            placeholderTextColor='rgba(255,255,255,.5)'
+                            secureTextEntry={hidePass}
+                            value={password}
+                            onChangeText={(text) => setPassword(text)}
+                        />
                         <TouchableOpacity onPress={() => setHidePass(!hidePass)}>
                             {hidePass ? <MaterialIcons name='visibility' style={styles.iconPlacePassword} /> : <MaterialIcons name='visibility-off' style={styles.iconPlacePassword} />}
                         </TouchableOpacity>
                     </View>
 
-                    <TouchableOpacity style={styles.btnEntrar} onPress={() => navigation.navigate('Home')}>
+                    <TouchableOpacity style={styles.btnEntrar} onPress={handleSignIn}>
                         <Text style={styles.txtEntrar}>ENTRAR</Text>
                     </TouchableOpacity>
 

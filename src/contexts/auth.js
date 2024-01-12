@@ -1,26 +1,30 @@
 import React, { createContext, useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 
+import firebase from "../services/FIrebaseConnection";
+import { endAsyncEvent } from "react-native/Libraries/Performance/Systrace";
+
 export const AuthContext = createContext({});
 
 function AuthProvider({ children }) {
-    const [user, setUser] = useState({nome: 'matheus'});
+    const [user, setUser] = useState({ nome: 'matheus' });
     const [loadingAuth, setLoadingAuth] = useState(false);
 
     const navigation = useNavigation();
 
-    async function signUp(email, password, name) {
+    async function signUp(email, password, user) {
         setLoadingAuth(true);
-        try {
-            const response = await api.post('/user', {
-                name: name, password: password, email: email,
+        
+        const usuario = firebase.auth().createUserWithEmailAndPassword( email, password)
+            .then((usuario) => {
+                setLoadingAuth(false);
+                navigation.goBack();
+
             })
-            setLoadingAuth(false);
-            navigation.goBack();
-        } catch (err) {
+            .catch ((err) =>{
             console.log('erro ao cadastrar', err)
             setLoadingAuth(false);
-        }
+        })
     }
 
     async function singOut() {
@@ -28,8 +32,16 @@ function AuthProvider({ children }) {
             .then(() => { setUser(null); })
     }
 
+
+    async function signIn(email, password) {
+        const usuario = firebase.auth().signInWithEmailAndPassword(email, password)
+            .then((usuario) => {
+
+            })
+
+    }
     return (
-        <AuthContext.Provider value={{ signed: !!user, user, signUp, singOut, loadingAuth }}>
+        <AuthContext.Provider value={{ signed: !!user, user, signUp, singOut, signIn, loadingAuth }}>
             {children}
         </AuthContext.Provider>
     )
