@@ -3,6 +3,8 @@ import { View, Text, StyleSheet, ImageBackground, Image, TouchableOpacity, TextI
 import { useNavigation } from "@react-navigation/native";
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
+import firebase from "../../services/FIrebaseConnection";
+
 export default function SignIn() {
     const navigation = useNavigation();
     const [hidePass, setHidePass] = useState(true);
