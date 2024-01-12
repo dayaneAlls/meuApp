@@ -80,7 +80,7 @@ export default function SignIn() {
                         </TouchableOpacity>
                     </View>
 
-                    <TouchableOpacity onPress={() => navigation.navigate()}>
+                    <TouchableOpacity onPress={() => navigation.navigate('Visitante')}>
                         <Text style={styles.txtVisitante}>ENTRAR COMO VISITANTE</Text>
                     </TouchableOpacity>
 
