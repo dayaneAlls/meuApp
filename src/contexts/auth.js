@@ -16,21 +16,19 @@ function AuthProvider({ children }) {
     async function signUp(email, password, user) {
 
         setLoadingAuth(true);
-        const usuario = firebase.auth().createUserWithEmailAndPassword(email, password)
-            .then((usuario) => {
+        const [usuario, error] = await firebase.auth().createUserWithEmailAndPassword(email, password)
 
-                firebase.database().ref('usuarios').child(usuario.user.uid).set({
-                    nome: user,
-                    email: email
-                })
-                setLoadingAuth(false);
-                navigation.goBack();
+        if(error){
+            setLoadingAuth(false);
+            throw new Error("Erro ao efetuar Cadastro", error)
+        }
 
-            })
-            .catch((err) => {
-                console.log('erro ao cadastrar', err)
-                setLoadingAuth(false);
-            })
+        firebase.database().ref('usuarios').child(usuario.user.uid).set({
+            nome: user,
+            email: email
+        })
+        setLoadingAuth(false);
+        navigation.goBack();
     }
 
     async function singOut() {
