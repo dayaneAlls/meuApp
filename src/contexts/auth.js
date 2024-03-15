@@ -1,6 +1,8 @@
 import React, { createContext, useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 
+import axios from 'axios';
+import to from 'await-to-js'
 import firebase from "../services/FIrebaseConnection";
 import { endAsyncEvent } from "react-native/Libraries/Performance/Systrace";
 
@@ -14,19 +16,17 @@ function AuthProvider({ children }) {
     const navigation = useNavigation();
 
     async function signUp(email, password, user) {
-
         setLoadingAuth(true);
-        const [usuario, error] = await firebase.auth().createUserWithEmailAndPassword(email, password)
+        const [error, usuario] = await to(axios.post('http://localhost:3000/unauth/register',
+        { userName: user, email, password },
+        ))
 
         if(error){
+            console.log(error)
             setLoadingAuth(false);
             throw new Error("Erro ao efetuar Cadastro", error)
         }
-
-        firebase.database().ref('usuarios').child(usuario.user.uid).set({
-            nome: user,
-            email: email
-        })
+        
         setLoadingAuth(false);
         navigation.goBack();
     }
@@ -39,6 +39,9 @@ function AuthProvider({ children }) {
 
     async function signIn(email, password) {
         setLoadingAuth(true);
+
+
+
         const usuario = firebase.auth().signInWithEmailAndPassword(email, password)
             .then((usuario) => {
 
@@ -55,18 +58,13 @@ function AuthProvider({ children }) {
                         }
                         setUser(usuario.user.uid)
                         setLoadingAuth(false);
-                       
+                    
                     })
 
                 }
                 // alert(idUsuario)
 
                 capturaDados();
-
-
-
-
-
 
             })
             .catch((err) => {
