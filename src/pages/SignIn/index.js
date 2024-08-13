@@ -19,6 +19,8 @@ export default function SignIn() {
             alert('Por favor preencha todos os campos!')
             return;
         }
+
+
         signIn(email,password)
     }
     return (
@@ -60,18 +62,6 @@ export default function SignIn() {
                     <TouchableOpacity>
                         <Text style={{ color: 'rgba(255,255,255,1)', padding: 10 }}>Esqueceu a senha?</Text>
                     </TouchableOpacity>
-
-                    <View style={styles.viewSocial}>
-                        <TouchableOpacity>
-                            <Image source={require('../../img/insta.png')}></Image>
-                        </TouchableOpacity>
-                        <TouchableOpacity>
-                            <Image source={require('../../img/facebook.png')}></Image>
-                        </TouchableOpacity>
-                        <TouchableOpacity>
-                            <Image source={require('../../img/google.png')}></Image>
-                        </TouchableOpacity>
-                    </View>
 
                     <View style={styles.viewCadastrar}>
                         <Text style={{ color: 'rgba(255,255,255,1)', padding: 10 }}>Não possui conta?</Text>

@@ -1,5 +1,5 @@
 import React, {useState}from "react";
-import { View, Text, StyleSheet, TextInput, TouchableOpacity} from 'react-native'
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, Image} from 'react-native'
 
 
 export default function Visitante() {
@@ -23,7 +23,19 @@ export default function Visitante() {
                     <Text style={styles.txtPesquisar}>Pesquisar</Text>
                 </TouchableOpacity>
             </View>
+            <TouchableOpacity>
+                <View style={styles.cardNoticia}>
+                <Image source={require('../../img/logo1.png')} style={{
+                            width: 130,
+                            height: 118
+                        }}></Image>
+                    <Text>Testando o bloco de noticia</Text>
+                </View>
+            </TouchableOpacity>
         </View>
+
+        //https://www.tuacasa.com.br/plantas-faceis-de-cuidar/
+        //teste1234
     )
 }
 
@@ -63,5 +75,9 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         padding: 12
     },
-
+    cardNoticia: {
+        backgroundColor: '#E8D3B6',
+        padding:20,
+        margin: 50,
+    }
 })

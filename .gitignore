@@ -2,11 +2,8 @@
 
 # dependencies
 node_modules/
+.expo
 
-# Expo
-.expo/
-dist/
-web-build/
 
 # Native
 *.orig.*
