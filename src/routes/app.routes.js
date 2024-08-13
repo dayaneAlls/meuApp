@@ -28,17 +28,17 @@ function AppRoutes() {
                 drawerLabelStyle: { fontSize: 18 },
             }}>
             <AppDrawer.Screen
-                name="Pesquisar Plantas"
-                component={Home}
-                options={{
-                    drawerIcon: () => { return <Icon name="search" color={'#f0f2ff'} size={20} /> }
-                }}>
-            </AppDrawer.Screen>
-            <AppDrawer.Screen
                 name="Minhas Plantas"
                 component={MinhasPlantas}
                 options={{
                     drawerIcon: () => { return <Icon name="settings" color={'#f0f2ff'} size={20} /> }
+                }}>
+            </AppDrawer.Screen>
+            <AppDrawer.Screen
+                name="Pesquisar Plantas"
+                component={Home}
+                options={{
+                    drawerIcon: () => { return <Icon name="search" color={'#f0f2ff'} size={20} /> }
                 }}>
             </AppDrawer.Screen>
         </AppDrawer.Navigator>

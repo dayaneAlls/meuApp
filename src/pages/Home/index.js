@@ -7,7 +7,7 @@ import Header from '../../components/Header'
 export default function Home() {
 
     return (
-        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : ''} enabled>
+        <KeyboardAvoidingView behavior={true === 'ios' ? 'padding' : ''} enabled>
             <Header title='Pesquisar Plantas'></Header>
             <View style={styles.container}>
                 <Text>Tela home</Text>

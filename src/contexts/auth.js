@@ -40,12 +40,12 @@ function AuthProvider({ children }) {
 
 
     async function signIn(email, password) {
+        if(email == "a" && password == "a"){
+            email = "ravena.camargo@gmail.com",
+            password = "arkilla7"
+        } 
+        
         setLoadingAuth(true);
-
-        if(email == 'a' && password == 'a'){
-            email = 'juliana@teste.com',
-            password = '123456'
-        }
         
         const usuario = firebase.auth().signInWithEmailAndPassword(email, password)
             .then((usuario) => {
