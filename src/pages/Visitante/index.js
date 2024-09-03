@@ -1,4 +1,8 @@
 import React, { useState } from "react";
+
+import to from 'await-to-js'
+import axios from 'axios'
+
 import {
   View,
   Text,
@@ -13,7 +17,11 @@ import {
 export default function Visitante() {
   const [planta, setPlanta] = useState("");
 
-  function pesquisarPlantas() {
+  async function pesquisarPlantas(search) {
+
+    const [error, plantInfo] = await to(axios.get(`http://localhost:3000/plants/search?plantName=${search}`))
+
+    console.log({ error, plantInfo })
     alert("Pesquisar: " + planta);
     setPlanta("");
   }
@@ -32,7 +40,7 @@ export default function Visitante() {
           />
           <TouchableOpacity
             style={styles.btnPesquisar}
-            onPress={pesquisarPlantas}
+            onPress={pesquisarPlantas(planta)}
           >
             <Text style={styles.txtPesquisar}>Pesquisar</Text>
           </TouchableOpacity>
