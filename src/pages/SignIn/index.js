@@ -59,7 +59,7 @@ export default function SignIn() {
                         <Text style={styles.txtEntrar}>ENTRAR</Text>
                     </TouchableOpacity>
 
-                    <TouchableOpacity>
+                    <TouchableOpacity onPress={() => navigation.navigate('EsqueceuSenha')}>
                         <Text style={{ color: 'rgba(255,255,255,1)', padding: 10 }}>Esqueceu a senha?</Text>
                     </TouchableOpacity>
 
