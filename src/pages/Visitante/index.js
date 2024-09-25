@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-
-import to from 'await-to-js'
-import axios from 'axios'
-
+import to from 'await-to-js';
+import api from '../../services/api';
+import { LinearGradient } from "expo-linear-gradient";
+import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import {
   View,
   Text,
@@ -11,27 +11,60 @@ import {
   TouchableOpacity,
   Image,
   ImageBackground,
-  Linking,
+  Dimensions,
+  FlatList,
 } from "react-native";
 
 export default function Visitante() {
   const [planta, setPlanta] = useState("");
+  const [listaDePlantas, setListaDePlantas] = useState([]);
 
   async function pesquisarPlantas(search) {
+    console.log({ search });
+    const [error, response] = await to(api.get(`unauth/plants/search?plantName=${search}`));
 
-    const [error, plantInfo] = await to(axios.get(`http://localhost:3000/plants/search?plantName=${search}`))
+    if (error) {
+      console.error('Erro ao buscar plantas:', error);
+      return;
+    }
 
-    console.log({ error, plantInfo })
-    alert("Pesquisar: " + planta);
+    console.log({ data: response.data });
+    setListaDePlantas(response.data.plants);
     setPlanta("");
   }
+
+  // Calcular a largura disponível para cada card
+  const windowWidth = Dimensions.get('window').width;
+  const cardWidth = windowWidth / 2 - 20; // Subtrai a margem/padding conforme necessário
+
+  const renderItem = ({ item }) => {
+    const base64Image = `data:image/jpeg;base64,${item.thumbnail}`;
+
+    return (
+      <View style={[styles.card, { width: cardWidth }]}>
+        <TouchableOpacity
+          style={styles.cardNoticia}
+          onPress={() => { }}
+        >
+          <Image
+            source={{ uri: base64Image }}
+            style={styles.image}
+            resizeMode="cover" // Ajusta o modo de redimensionamento da imagem
+          />
+          <Text style={styles.cardText}>{item.matched_in}</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
   return (
     <ImageBackground
-      source={require("../../img/cereja.jpg")}
+      source={require("../../img/fundoPesquisar2.jpg")}
       style={styles.imageBackground}
+      imageStyle={{ opacity: 0.2 }}
     >
       <View style={styles.container}>
-        <View style={styles.areaInput}>
+        <View>
           <TextInput
             placeholder="Pesquisar Plantas"
             style={styles.input}
@@ -39,102 +72,90 @@ export default function Visitante() {
             onChangeText={(text) => setPlanta(text)}
           />
           <TouchableOpacity
-            style={styles.btnPesquisar}
-            onPress={pesquisarPlantas(planta)}
+            onPress={() => pesquisarPlantas(planta)}
           >
-            <Text style={styles.txtPesquisar}>Pesquisar</Text>
+            <MaterialIcons name="search" style={styles.iconPlace} />
           </TouchableOpacity>
         </View>
-        <View style={styles.card}>
-          <TouchableOpacity
-            style={styles.cardNoticia}
-            onPress={() => Linking.openURL("https://www.tuacasa.com.br/plantas-faceis-de-cuidar/")}
-          >
-            <Image
-              source={require("../../img/plantas-faceis-de-cuidar.webp")}
-              style={{
-                maxWidth: '45%',
-                maxHeight: '45%',
-                opacity: 1,
-              }}
-            ></Image>
-            <Text style={styles.cardText}>40 plantas mais fáceis de cuidar para cultivar em casa</Text>
-          </TouchableOpacity>
-        </View>
+        <FlatList
+          data={listaDePlantas}
+          renderItem={renderItem}
+          keyExtractor={(item, index) => index} // Assegure-se de ter uma chave única para cada item
+          numColumns={2} // Define o número de colunas
+          contentContainerStyle={styles.cardsContainer} // Estilo do contêiner de itens 
+        />
       </View>
-    </ImageBackground>
-
-    //https://www.tuacasa.com.br/plantas-faceis-de-cuidar/
-    //teste1234
+    </ImageBackground >
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "flex-start",
+    justifyContent: "center",
     alignItems: "center",
+    padding: 10,
   },
+
   input: {
     color: "#3a4d39",
     height: 55,
     fontSize: 20,
-    paddingLeft: 15,
-    borderWidth: 1,
-    borderColor: "#3a4d39",
-    backgroundColor: "rgba(232,211,182,.61)",
+    paddingLeft: 25,
+    borderColor: "#587f56",
+    borderWidth: 2,
+    backgroundColor: "white",
     marginTop: 20,
-    borderRadius: 10,
-    width: 310,
-    margin: 5,
+    borderRadius: 25,
+    width: 360,
   },
-  btnPesquisar: {
-    backgroundColor: "#3a4d39",
-    borderColor: "rgba(255,255,255,.5)",
-    borderWidth: 0.4,
-    borderRadius: 24,
-    height: 55,
-    marginTop: 18,
-  },
-  txtPesquisar: {
-    color: "rgba(255,255,255,.9)",
-    fontSize: 20,
-    textAlign: "center",
-    padding: 12,
+
+  cardsContainer: {
+    flexDirection: 'column',
+    justifyContent: 'space-between',
   },
   card: {
-    height: 250,
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'space-around',
-    alignItems: 'center'
+    marginTop: 10,
+    marginBottom: 10,
+    marginHorizontal: 5,
+    justifyContent: "space-around",
+    alignItems: 'center',
+    backgroundColor: '#f2d8cb', //#edddd5
+    borderColor: "#587f56",
+    borderWidth: 2,
+    borderRadius: 15,
+    padding: 10,
   },
   cardNoticia: {
     flex: 1,
     justifyContent: "flex-start",
     alignItems: "center",
-    backgroundColor: '#E2DAD6',
-    borderColor: "#000000",
-    borderWidth: 1,
-    padding: 20,
-    marginTop: 30,
-    height: 600,
-    borderRadius: 15,
+    width: '100%',
+    height: '100%',
+
   },
   cardText: {
     fontWeight: 'bold',
-    flex: 1,
     fontSize: 16,
     textAlign: 'center',
-    // marginTop: 10,
     marginVertical: 10,
   },
   imageBackground: {
-    height: "100%",
-    width: "100%",
-    resizeMode: "cover",
+    height: '100%',
+    width: '100%',
     justifyContent: "center",
     alignItems: "center",
-    opacity: 0.8,
   },
+  image: {
+    width: "90%",
+    height: 90,
+    borderRadius: 5
+  },
+  iconPlace: {
+    position: "absolute",
+    left: 310,
+    top: -45,
+    fontSize: 40,
+    color: "rgba(58, 77, 57,.7)",
+  }
 });

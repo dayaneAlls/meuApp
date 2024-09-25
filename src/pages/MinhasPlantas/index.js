@@ -1,11 +1,16 @@
 import React from "react";
 import { View, Text, StyleSheet } from 'react-native';
 
-export default function Sobre() {
+import Header from '../../components/Header'
+
+export default function MinhasPlantas() {
     return (
-        <View style={style.container}>
-            <Text>Tela Sobre</Text>
-        </View>
+        <>
+            <Header title='Minhas Plantas'></Header>
+            <View style={style.container}>
+                <Text>Tela Minhas Plantas</Text>
+            </View>
+        </>
     )
 }
 

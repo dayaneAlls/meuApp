@@ -11,8 +11,7 @@ import {
 import { useNavigation } from "@react-navigation/native";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { AuthContext } from "../../contexts/auth";
-
-import firebase from "../../services/FIrebaseConnection";
+import { LinearGradient } from "expo-linear-gradient";
 
 export default function SignIn() {
   const { signIn, loadingAuth } = useContext(AuthContext);
@@ -26,23 +25,27 @@ export default function SignIn() {
       alert("Por favor preencha todos os campos!");
       return;
     }
-
-    signIn(email, password);
+    try {
+      signIn(email, password)
+    } catch (error) {
+      alert(error.message);
+    }
   }
+
   return (
     <View style={styles.container}>
       <ImageBackground
         source={require("../../img/fundo.png")}
         style={styles.imageBackground}
+        imageStyle={{ opacity: 0.8 }}
       >
         <View style={styles.telaLogin}>
-          <Image
-            source={require("../../img/logo1.png")}
-            style={{
-              width: 130,
-              height: 118,
-            }}
-          ></Image>
+          <View style={styles.viewLogo}>
+            <Image
+              source={require("../../img/logo1.png")}
+              style={styles.logo}
+            ></Image>
+          </View>
           <View>
             <TextInput
               style={styles.input}
@@ -75,28 +78,28 @@ export default function SignIn() {
               )}
             </TouchableOpacity>
           </View>
-
-          <TouchableOpacity style={styles.btnEntrar} onPress={handleSignIn}>
-            <Text style={styles.txtEntrar}>ENTRAR</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity>
-            <Text style={{ color: "rgba(255,255,255,1)", padding: 10 }}>
+          <LinearGradient colors={['#779675', '#4b6949', '#2b382a']} style={styles.btnEntrar}>
+            <TouchableOpacity onPress={handleSignIn}>
+              <Text style={styles.txtEntrar}>Entrar</Text>
+            </TouchableOpacity>
+          </LinearGradient>
+          <TouchableOpacity onPress={() => navigation.navigate("EsqueceuSenha")}>
+            <Text style={{ color: "#3A4D39", marginTop: 20, fontSize: 17, fontWeight: "bold" }}>
               Esqueceu a senha?
             </Text>
           </TouchableOpacity>
 
           <View style={styles.viewCadastrar}>
-            <Text style={{ color: "rgba(255,255,255,1)", padding: 10 }}>
+            <Text style={{ color: "rgba(255,255,255,1)", fontSize: 18, marginTop: 15, }}>
               Não possui conta?
             </Text>
-            <TouchableOpacity onPress={() => navigation.navigate("SignUp")}>
+            <TouchableOpacity onPress={() => navigation.navigate("SignUp")} style={styles.btnCadastrar}>
               <Text style={styles.txtCadastrar}>Cadastre-se</Text>
             </TouchableOpacity>
           </View>
 
-          <TouchableOpacity onPress={() => navigation.navigate("Visitante")}>
-            <Text style={styles.txtVisitante}>ENTRAR COMO VISITANTE</Text>
+          <TouchableOpacity onPress={() => navigation.navigate("Visitante")} style={styles.btnVisitante}>
+            <Text style={styles.txtVisitante}>Entrar como visitante</Text>
           </TouchableOpacity>
         </View>
       </ImageBackground>
@@ -109,55 +112,73 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
   },
+  logo: {
+    width: 130,
+    height: 118,
+    borderColor: '#2b382a',
+    borderWidth: 2,
+    borderRadius: 60,
+
+  },
+
+  viewLogo: {
+    borderRadius: 60,
+    marginTop: 15,
+    elevation: 15,
+    shadowColor: 'black',
+  },
+
   imageBackground: {
     flex: 1,
     resizeMode: "cover",
     justifyContent: "center",
     alignItems: "center",
-    opacity: 0.8,
   },
   telaLogin: {
-    backgroundColor: "rgba(115,144,114,.9)",
-    borderRadius: 27,
-    margin: 6,
-    padding: 25,
+    backgroundColor: "#739072",
+    borderRadius: 25,
+    padding: 15,
     borderColor: "rgba(58,77,57,.75)",
     borderWidth: 1,
     justifyContent: "center",
     alignItems: "center",
+    maxWidth: "87%",
+    shadowColor: 'black',
+    elevation: 25,
+    opacity: 0.8,
   },
   btnEntrar: {
-    backgroundColor: "rgba(58,77,57,1)",
-    borderColor: "rgba(255,255,255,.5)",
     borderWidth: 0.4,
     borderRadius: 24,
     height: 43,
     width: 300,
     maxWidth: "65%",
-    marginTop: 18,
+    marginTop: 25,
+    shadowColor: 'black',
+    elevation: 10,
   },
   txtEntrar: {
     color: "rgba(255,255,255,.9)",
-    fontSize: 17,
+    fontSize: 25,
     textAlign: "center",
-    padding: 8,
+    padding: 2,
+    fontWeight: 'bold',
   },
   input: {
     color: "white",
     height: 40,
-    fontSize: 17,
+    fontSize: 20,
     paddingLeft: 15,
-    borderBottomWidth: 1,
+    borderBottomWidth: 1.5,
     borderColor: "rgba(255,255,255,1)",
-    marginTop: 20,
-    borderRadius: 10,
-    width: 300,
-    maxWidth: "75%",
+    marginTop: 30,
+    borderRadius: 15,
+    width: 295,
   },
   iconPlace: {
     position: "absolute",
     right: 17,
-    top: 35,
+    top: 40,
     fontSize: 20,
     color: "rgba(255,255,255,.5)",
   },
@@ -168,26 +189,37 @@ const styles = StyleSheet.create({
     fontSize: 20,
     color: "rgba(255,255,255,.5)",
   },
-  viewSocial: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    alignItems: "center",
-    width: "80%",
-    padding: 10,
-    fontSize: 40,
-  },
   viewCadastrar: {
     flexDirection: "row",
     justifyContent: "space-around",
     alignItems: "center",
-    width: "80%",
-    padding: 10,
+    width: "90%",
   },
   txtCadastrar: {
     color: "#3A4D39",
+    fontWeight: "bold",
+    fontSize: 20,
+    textAlign: 'center',
+    padding: 2,
   },
   txtVisitante: {
     color: "rgba(255,255,255,.9)",
     fontWeight: "bold",
+    fontSize: 20,
+    textAlign: 'center',
+    padding: 5,
   },
+  btnCadastrar: {
+    borderRadius: 24,
+    height: 35,
+    width: 135,
+    marginTop: 18,
+  },
+  btnVisitante: {
+    borderRadius: 24,
+    height: 43,
+    width: 260,
+    marginTop: 25,
+    marginBottom: 20,
+  }
 });

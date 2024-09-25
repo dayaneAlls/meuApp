@@ -1,10 +1,11 @@
 import React from "react";
 import { createDrawerNavigator } from "@react-navigation/drawer";
-import Icon from 'react-native-vector-icons/MaterialIcons'
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons'
 
-import Home from '../pages/Home';
+import PesquisarPlantas from '../pages/PesquisarPlantas';
 import MinhasPlantas from '../pages/MinhasPlantas';
 import DrawerLogo from '../components/DrawerLogo';
+import SignUp from "../pages/SignUp";
 
 
 const AppDrawer = createDrawerNavigator();
@@ -18,27 +19,28 @@ function AppRoutes() {
                 headerShown: false,
                 drawerStyle: {
                     backgroundColor: '#739072',
-                    paddingTop: 20,
+                    paddingTop: 50,
                 },
                 drawerActiveBackgroundColor: '#4F6F52',
                 drawerInactiveBackgroundColor: '#3A4D39',
-                drawerItemStyle: { borderRadius: 27, height: 55, },
+                drawerItemStyle: { height: 70, borderBottomColor: '#f0f2ff', borderBottomWidth: 2 },
                 drawerActiveTintColor: '#f0f2ff',
                 drawerInactiveTintColor: '#f0f2ff',
-                drawerLabelStyle: { fontSize: 18 },
+                drawerLabelStyle: { fontSize: 18, paddingTop: 5 },
+
             }}>
             <AppDrawer.Screen
                 name="Minhas Plantas"
                 component={MinhasPlantas}
                 options={{
-                    drawerIcon: () => { return <Icon name="settings" color={'#f0f2ff'} size={20} /> }
+                    drawerIcon: () => { return <Icon name="sprout" color={'#f0f2ff'} size={20} paddingLeft={5} /> }
                 }}>
             </AppDrawer.Screen>
             <AppDrawer.Screen
                 name="Pesquisar Plantas"
-                component={Home}
+                component={PesquisarPlantas}
                 options={{
-                    drawerIcon: () => { return <Icon name="search" color={'#f0f2ff'} size={20} /> }
+                    drawerIcon: () => { return <Icon name="magnify" color={'#f0f2ff'} size={25} paddingLeft={5} /> }
                 }}>
             </AppDrawer.Screen>
         </AppDrawer.Navigator>

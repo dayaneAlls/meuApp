@@ -13,10 +13,10 @@ import {
 } from "react-native";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { AuthContext } from "../../contexts/auth";
+import { LinearGradient } from "expo-linear-gradient";
 
 export default function SignUp() {
   const [hidePass, setHidePass] = useState(true);
-
   const { signUp, loadingAuth } = useContext(AuthContext);
   const [user, setUser] = useState("");
   const [email, setEmail] = useState("");
@@ -39,15 +39,15 @@ export default function SignUp() {
         style={styles.imageBackground}
       >
         <View style={styles.viewInput}>
-          <Image
-            source={require("../../img/logo1.png")}
-            style={{
-              width: 130,
-              height: 118,
-              marginTop: -80,
-              marginBottom: 35,
-            }}
-          ></Image>
+          <View style={styles.viewLogo}>
+            <Image
+              source={require("../../img/logo1.png")}
+              style={{
+                width: 130,
+                height: 118,
+              }}
+            ></Image>
+          </View>
           <View>
             <TextInput
               style={styles.input}
@@ -87,13 +87,15 @@ export default function SignUp() {
               )}
             </TouchableOpacity>
           </View>
-          <TouchableOpacity style={styles.btnCadastrar} onPress={handleSignUp}>
-            {loadingAuth ? (
-              <ActivityIndicator size={50} color={"#fff"} />
-            ) : (
-              <Text style={styles.txtCadastrar}>CADASTRAR</Text>
-            )}
-          </TouchableOpacity>
+          <LinearGradient style={styles.btnCadastrar} colors={['#587f56', '#587f56', '#3a4d39']}>
+            <TouchableOpacity onPress={handleSignUp}>
+              {loadingAuth ? (
+                <ActivityIndicator size={50} color={"#fff"} />
+              ) : (
+                <Text style={styles.txtCadastrar}>CADASTRAR</Text>
+              )}
+            </TouchableOpacity>
+          </LinearGradient>
         </View>
       </ImageBackground>
     </KeyboardAvoidingView>
@@ -106,7 +108,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   btnCadastrar: {
-    backgroundColor: "#3a4d39",
     borderColor: "rgba(255,255,255)",
     borderWidth: 0.4,
     borderRadius: 15,
@@ -114,6 +115,8 @@ const styles = StyleSheet.create({
     width: 300,
     maxWidth: "65%",
     marginTop: 35,
+    shadowColor: 'black',
+    elevation: 15,
   },
   txtCadastrar: {
     color: 'white',
@@ -127,7 +130,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     paddingLeft: 15,
     borderWidth: 1,
-    borderColor: "#3a4d39",
+    borderColor: "rgba(211, 211, 230)",
     backgroundColor: "rgba(211, 211, 230,.90)",
     marginTop: 20,
     borderRadius: 10,
@@ -142,7 +145,7 @@ const styles = StyleSheet.create({
     color: "#3a4d39",
   },
   viewInput: {
-    backgroundColor: "rgba(247, 250, 250,.71)",
+    backgroundColor: "rgba(223, 229, 235,.7)",
     justifyContent: "center",
     alignItems: "center",
     alignItems: "center",
@@ -155,5 +158,14 @@ const styles = StyleSheet.create({
     resizeMode: "cover",
     justifyContent: "center",
     alignItems: "center",
+  },
+
+  viewLogo: {
+    borderRadius: 60,
+    marginTop: 15,
+    elevation: 60,
+    shadowColor: 'black',
+    marginTop: -80,
+    marginBottom: 35,
   },
 });
