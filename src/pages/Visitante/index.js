@@ -21,7 +21,7 @@ export default function Visitante() {
 
   async function pesquisarPlantas(search) {
     console.log({ search });
-    const [error, response] = await to(api.get(`unauth/plants/search?plantName=${search}`));
+    const [error, response] = await to(api.get(`unauth/plant/search?plantName=${search}`));
 
     if (error) {
       console.error('Erro ao buscar plantas:', error);
