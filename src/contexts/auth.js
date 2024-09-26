@@ -9,9 +9,9 @@ export const AuthContext = createContext({});
 
 function AuthProvider({ children }) {
     const [userToken, setUserToken] = useState(null);
-    // const [usuarioLogado, setUsuarioLogado] = useState(null)
     const [user, setUser] = useState(null);
     const [loadingAuth, setLoadingAuth] = useState(false);
+    const [codigo, setCodigo] = useState(null);
 
     const navigation = useNavigation();
 
@@ -19,7 +19,7 @@ function AuthProvider({ children }) {
         async function loadStorage() {
             setLoadingAuth(true)
             const storageUser = await AsyncStorage.getItem("@userToken")
-            // setLoadingAuth(false)
+            setLoadingAuth(false)
 
             if (storageUser) {
 
@@ -40,7 +40,7 @@ function AuthProvider({ children }) {
         } catch (err) {
             console.log("Erro ao cadastrar", err)
         }*/
-        const [error, response] = await to(api.post('unauth/register',
+        const [error, response] = await to(api.post('unauth/authentication/register',
             { userName, email, password },
         ))
         if (error) {
@@ -53,7 +53,7 @@ function AuthProvider({ children }) {
 
     async function signOut() {
         await AsyncStorage.clear().then(() => {
-            setUserToken(null);
+            setUser(null);
         })
     }
 
@@ -62,7 +62,7 @@ function AuthProvider({ children }) {
         setLoadingAuth(true)
 
         try {
-            const [error, response] = await to(api.post('unauth/signin',
+            const [error, response] = await to(api.post('unauth/authentication/signin',
                 {
                     email,
                     password
@@ -110,33 +110,9 @@ function AuthProvider({ children }) {
     }
 
 
-
-
-
-    /*const [error, response] = await to(api.post('unauth/signin',
-        {
-            email,
-            password
-        }
-    ))
-
-    if (error) {
-        console.log(error)
-        setLoadingAuth(false)
-        throw new Error("Erro ao efetuar Login", error)
-    }
-
-    if (response) {
-        const { id, name, userToken } = response.data;
-        const data = { id, name, token, email };*/
-
-
-
-
-
-    /*async function recuperarSenha(email) {
+    async function recuperarSenha(email) {
         setLoadingAuth(true);
-        const [error, response] = await to(api.post('unauth/password/solicit',
+        const [error, response] = await to(api.post('unauth/user/password/solicit',
             { email },
         ))
         if (error) {
@@ -150,34 +126,35 @@ function AuthProvider({ children }) {
 
     async function codeSubmit(codigo) {
         setLoadingAuth(true);
-        const [error, response] = await to(api.post('unauth/password/solicit',
-            { codigo },
+        const [error, response] = await to(api.post('unauth/user/password/confirm',
+            { passwordResetCode: codigo },
         ))
         if (error) {
             console.log(error)
             setLoadingAuth(false);
             throw new Error("Erro ao enviar código", error)
         }
-
+        setCodigo(codigo);
         setLoadingAuth(false);
-    }*/
-    /*async function cadastrar(email, email2) {
+    }
+
+    async function cadastrar(password, confirmPassword) {
         setLoadingAuth(true);
-        const [error, response] = await to(api.post('unauth/password/solicit',
-            { email, email2 },
+        const [error, response] = await to(api.post('unauth/user/password/new',
+            { password, passwordConfirmation: confirmPassword, passwordResetCode: codigo },
         ))
         if (error) {
             console.log(error)
             setLoadingAuth(false);
             throw new Error("Erro ao enviar senhas", error)
         }
-
+        setCodigo(null);
         setLoadingAuth(false);
         navigation.goBack();
-    }*/
+    }
 
     return (
-        <AuthContext.Provider value={{ signed: !!user, user, signUp, signOut, signIn, loadingAuth }}>
+        <AuthContext.Provider value={{ signed: !!user, user, signUp, signOut, signIn, recuperarSenha, cadastrar, codeSubmit, loadingAuth }}>
             {children}
         </AuthContext.Provider>
     )

@@ -36,19 +36,19 @@ export default function EsqueceuSenha() {
         /*if (email === "") {
             alert("Por favor preencha todos os campos!");
             return;
-        }
-        recuperarSenha(email);*/
+        }*/
+        recuperarSenha(email);
         setMessageBox(false);
         setEnviarCodigo(true);
 
     }
 
     function handleCodeSubmit() {
-        /*if (codigo === "") {
-            alert("Por favor preencha todos os campos!");
-            return;
-        }
-        codeSubmit(codigo);*/
+        /* if (codigo === "") {
+             alert("Por favor preencha todos os campos!");
+             return;
+         }*/
+        codeSubmit(codigo);
         setEnviarCodigo(false);
         setNovaSenha(true);
     }
@@ -57,10 +57,10 @@ export default function EsqueceuSenha() {
         /*if (password === "" || password2 === "") {
             alert("Por favor preencha todos os campos!");
             return;
-        }
-        cadastrar(password, password2);*/
+        }*/
+        cadastrar(password, password2);
         setNovaSenha(false);
-        
+
 
 
     }
