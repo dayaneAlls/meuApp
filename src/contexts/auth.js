@@ -1,9 +1,9 @@
-import React, { createContext, useEffect, useState } from "react"
-import { useNavigation } from "@react-navigation/native"
-import AsyncStorage from '@react-native-async-storage/async-storage'
-import api from '../services/api'
-import to from 'await-to-js'
-import { jwtDecode } from "jwt-decode"
+import React, { createContext, useEffect, useState } from "react";
+import { useNavigation } from "@react-navigation/native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import api from "../services/api";
+import to from "await-to-js";
+import { jwtDecode } from "jwt-decode";
 
 export const AuthContext = createContext({});
 
@@ -13,7 +13,7 @@ function AuthProvider({ children }) {
     const [loadingAuth, setLoadingAuth] = useState(false);
     const [codigo, setCodigo] = useState(null);
 
-    const navigation = useNavigation();
+  const navigation = useNavigation();
 
     useEffect(() => {
         async function loadStorage() {
@@ -21,35 +21,39 @@ function AuthProvider({ children }) {
             const storageUser = await AsyncStorage.getItem("@userToken")
             setLoadingAuth(false)
 
-            if (storageUser) {
-
-                setUser(storageUser)
-            } else {
-                setUserToken(null)
-            }
-        }
-        loadStorage();
-    }, []);
-
-    async function signUp(email, password, userName) {
-        setLoadingAuth(true);
-        /*try {
-            const response = await api.post('unauth/register', { email, password, userName })
-            setLoadingAuth(false);
-            navigation.goBack();
-        } catch (err) {
-            console.log("Erro ao cadastrar", err)
-        }*/
-        const [error, response] = await to(api.post('unauth/authentication/register',
-            { userName, email, password },
-        ))
-        if (error) {
-            console.log(error)
-            setLoadingAuth(false);
-            throw new Error("Erro ao efetuar Cadastro", error)
-        }
-
+      if (storageUser) {
+        setUser(storageUser);
+      } else {
+        setUserToken(null);
+      }
     }
+    loadStorage();
+  }, []);
+
+  async function signUp(email, password, userName, passwordConfirmation) {
+    setLoadingAuth(true);
+    try {
+      const [error, response] = await to(
+        api.post("unauth/authentication/register", {
+          userName,
+          email,
+          password,
+          passwordConfirmation,
+        })
+      );
+      
+      if (error) {
+        console.log(error);
+        setLoadingAuth(false);
+        throw new Error("Erro ao efetuar Cadastro", error);
+      }
+      setLoadingAuth(false);
+      navigation.goBack();
+      
+    } catch (err) {
+      alert(err)
+    }
+  }
 
     async function signOut() {
         await AsyncStorage.clear().then(() => {
@@ -58,8 +62,8 @@ function AuthProvider({ children }) {
     }
 
 
-    async function signIn(email, password) {
-        setLoadingAuth(true)
+  async function signIn(email, password) {
+    setLoadingAuth(true);
 
         try {
             const [error, response] = await to(api.post('unauth/authentication/signin',
@@ -69,40 +73,32 @@ function AuthProvider({ children }) {
                 }
             ))
 
-            const userToken = response.data.userToken;
+      const userToken = response.data.userToken;
+      console.log(userToken);
 
-            console.log(userToken);
+      const userInfo = jwtDecode(userToken);
+      console.log(userInfo);
 
-            const userInfo = jwtDecode(userToken);
+      await AsyncStorage.setItem("@userToken", userToken);
+      api.defaults.headers["Authorization"] = `Bearer ${userToken}`;
 
-            console.log(userInfo);
+      setUser(userInfo.name);
 
-            await AsyncStorage.setItem('@userToken', userToken);
+      setLoadingAuth(false);
+    } catch (err) {
+      console.log("Erro ao logar", err);
+      setLoadingAuth(false);
+    }
 
-            api.defaults.headers['Authorization'] = `Bearer ${userToken}`;
+    // console.log(response.data);
 
+    // if (error) {
+    //     console.log(error)
+    //     setLoadingAuth(false)
+    //     throw new Error("Erro ao efetuar Login", error)
+    // }
 
-            setUser(userToken)
-
-            console.log(userToken);
-
-            setLoadingAuth(false);
-
-
-        } catch (err) {
-            console.log("Erro ao logar", err);
-            setLoadingAuth(false);
-        }
-
-        // console.log(response.data);
-
-        // if (error) {
-        //     console.log(error)
-        //     setLoadingAuth(false)
-        //     throw new Error("Erro ao efetuar Login", error)
-        // }
-
-        /* if (response) {
+    /* if (response) {
              const { id, name, userToken } = response.data;
              const data = { id, name, token, email };*/
 

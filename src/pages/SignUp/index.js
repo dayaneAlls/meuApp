@@ -21,13 +21,14 @@ export default function SignUp() {
   const [user, setUser] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [passwordConfirmation, setPasswordConfirmation] = useState("");
 
   function handleSignUp() {
-    if (user === "" || email === "" || password === "") {
+    if (user === "" || email === "" || password === "" || passwordConfirmation === "") {
       alert("Por favor preencha todos os campos!");
       return;
     }
-    signUp(email, password, user);
+    signUp(email, password, user, passwordConfirmation);
   }
   return (
     <KeyboardAvoidingView
@@ -86,8 +87,33 @@ export default function SignUp() {
                 />
               )}
             </TouchableOpacity>
+
+            <TextInput
+              style={styles.input}
+              placeholder="Confirmar Senha"
+              value={passwordConfirmation}
+              onChangeText={(text) => setPasswordConfirmation(text)}
+              placeholderTextColor="#3a4d39"
+              secureTextEntry={hidePass}
+            ></TextInput>
+            <TouchableOpacity onPress={() => setHidePass(!hidePass)}>
+              {hidePass ? (
+                <MaterialIcons
+                  name="visibility"
+                  style={styles.iconPlacePassword}
+                />
+              ) : (
+                <MaterialIcons
+                  name="visibility-off"
+                  style={styles.iconPlacePassword}
+                />
+              )}
+            </TouchableOpacity>
           </View>
-          <LinearGradient style={styles.btnCadastrar} colors={['#587f56', '#587f56', '#3a4d39']}>
+          <LinearGradient
+            style={styles.btnCadastrar}
+            colors={["#587f56", "#587f56", "#3a4d39"]}
+          >
             <TouchableOpacity onPress={handleSignUp}>
               {loadingAuth ? (
                 <ActivityIndicator size={50} color={"#fff"} />
@@ -115,11 +141,11 @@ const styles = StyleSheet.create({
     width: 300,
     maxWidth: "65%",
     marginTop: 35,
-    shadowColor: 'black',
+    shadowColor: "black",
     elevation: 15,
   },
   txtCadastrar: {
-    color: 'white',
+    color: "white",
     fontSize: 20,
     textAlign: "center",
     padding: 12,
@@ -164,7 +190,7 @@ const styles = StyleSheet.create({
     borderRadius: 60,
     marginTop: 15,
     elevation: 60,
-    shadowColor: 'black',
+    shadowColor: "black",
     marginTop: -80,
     marginBottom: 35,
   },
