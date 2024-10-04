@@ -8,52 +8,64 @@ import { jwtDecode } from "jwt-decode";
 export const AuthContext = createContext({});
 
 function AuthProvider({ children }) {
-    const [userToken, setUserToken] = useState(null);
     const [user, setUser] = useState(null);
+    const [userName, setUserName] = useState(null);
     const [loadingAuth, setLoadingAuth] = useState(false);
     const [codigo, setCodigo] = useState(null);
+    const [loading, setLoading] = useState(false);
 
-  const navigation = useNavigation();
+    const navigation = useNavigation();
 
     useEffect(() => {
         async function loadStorage() {
-            setLoadingAuth(true)
-            const storageUser = await AsyncStorage.getItem("@userToken")
-            setLoadingAuth(false)
+            setLoadingAuth(true);
 
-      if (storageUser) {
-        setUser(storageUser);
-      } else {
-        setUserToken(null);
-      }
-    }
-    loadStorage();
-  }, []);
+            try {
+                const storageUserToken = await AsyncStorage.getItem("@userToken");
 
-  async function signUp(email, password, userName, passwordConfirmation) {
-    setLoadingAuth(true);
-    try {
-      const [error, response] = await to(
-        api.post("unauth/authentication/register", {
-          userName,
-          email,
-          password,
-          passwordConfirmation,
-        })
-      );
-      
-      if (error) {
-        console.log(error);
-        setLoadingAuth(false);
-        throw new Error("Erro ao efetuar Cadastro", error);
-      }
-      setLoadingAuth(false);
-      navigation.goBack();
-      
-    } catch (err) {
-      alert(err)
+                if (storageUserToken) {
+                    const userInfo = jwtDecode(storageUserToken); // Decodifica o token JWT
+                    const userName = userInfo.name;
+                    setUser(userInfo); // Define o usuário com as informações decodificadas
+                    setUserName(userName);
+                } else {
+                    setUser(null);
+                }
+            } catch (error) {
+                console.log("Erro ao carregar usuário do AsyncStorage", error);
+                setUser(null);
+            } finally {
+                setLoadingAuth(false);
+            }
+        }
+
+        loadStorage();
+    }, []);
+
+    async function signUp(email, password, userName, passwordConfirmation) {
+        setLoadingAuth(true);
+        try {
+            const [error, response] = await to(
+                api.post("unauth/authentication/register", {
+                    userName,
+                    email,
+                    password,
+                    passwordConfirmation,
+                })
+            );
+
+            if (error) {
+                console.log(error);
+                setLoadingAuth(false);
+                throw new Error("Erro ao efetuar Cadastro", error);
+            }
+            setLoadingAuth(false);
+            navigation.goBack();
+
+        } catch (err) {
+            alert(err)
+        }
     }
-  }
 
     async function signOut() {
         await AsyncStorage.clear().then(() => {
@@ -62,8 +74,8 @@ function AuthProvider({ children }) {
     }
 
 
-  async function signIn(email, password) {
-    setLoadingAuth(true);
+    async function signIn(email, password) {
+        setLoadingAuth(true);
 
         try {
             const [error, response] = await to(api.post('unauth/authentication/signin',
@@ -73,36 +85,22 @@ function AuthProvider({ children }) {
                 }
             ))
 
-      const userToken = response.data.userToken;
-      console.log(userToken);
+            const userToken = response.data.userToken;
+            const userInfo = jwtDecode(userToken);
+            const userName = userInfo.name;
+            console.log(userToken);
 
-      const userInfo = jwtDecode(userToken);
-      console.log(userInfo);
+            await AsyncStorage.setItem("@userToken", userToken);
+            api.defaults.headers["Authorization"] = `Bearer ${userToken}`;
 
-      await AsyncStorage.setItem("@userToken", userToken);
-      api.defaults.headers["Authorization"] = `Bearer ${userToken}`;
+            setUserName(userName);
+            console.log(userName);
+            setLoadingAuth(false);
 
-      setUser(userInfo.name);
-
-      setLoadingAuth(false);
-    } catch (err) {
-      console.log("Erro ao logar", err);
-      setLoadingAuth(false);
-    }
-
-    // console.log(response.data);
-
-    // if (error) {
-    //     console.log(error)
-    //     setLoadingAuth(false)
-    //     throw new Error("Erro ao efetuar Login", error)
-    // }
-
-    /* if (response) {
-             const { id, name, userToken } = response.data;
-             const data = { id, name, token, email };*/
-
-
+        } catch (err) {
+            console.log("Erro ao logar", err);
+            setLoadingAuth(false);
+        }
     }
 
 
@@ -150,7 +148,7 @@ function AuthProvider({ children }) {
     }
 
     return (
-        <AuthContext.Provider value={{ signed: !!user, user, signUp, signOut, signIn, recuperarSenha, cadastrar, codeSubmit, loadingAuth }}>
+        <AuthContext.Provider value={{ signed: !!user, userName, signUp, signOut, signIn, recuperarSenha, cadastrar, codeSubmit, loadingAuth, loading }}>
             {children}
         </AuthContext.Provider>
     )
