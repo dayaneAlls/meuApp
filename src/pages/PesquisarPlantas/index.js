@@ -1,7 +1,7 @@
 
 import React, { useState } from "react";
-import to from 'await-to-js';
-import api from '../../services/api';
+import api from "../../services/api";
+import to from "await-to-js";
 import Header from '../../components/Header'
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { useNavigation } from "@react-navigation/native";
@@ -19,11 +19,13 @@ import {
     FlatList,
 } from "react-native";
 
-export default function Configuracao() {
+export default function PesquisarPlantas() {
+
     const [planta, setPlanta] = useState("");
     const [listaDePlantas, setListaDePlantas] = useState([]);
     const [modalPlant, setModalPlant] = useState(false);
     const [selectedPlant, setSelectedPlant] = useState(null);
+    const [selectedPlantToken, setSelectedPlantToken] = useState(null);
     const [plantInfo, setPlantInfo] = useState(null);
     const navigation = useNavigation();
 
@@ -48,7 +50,17 @@ export default function Configuracao() {
             return;
         }
         setPlantInfo(response.data.plants);
+
     }
+
+    /*function handleAdd() {
+        if (planta === "") {
+            alert("Nenhuma planta pesquisada");
+            return;
+        }
+        addNewPlant(selectedPlant.access_token,);
+       
+    }*/
 
     // Calcular a largura disponível para cada card
     const windowWidth = Dimensions.get('window').width;
@@ -103,7 +115,7 @@ export default function Configuracao() {
                     <FlatList
                         data={listaDePlantas}
                         renderItem={renderItem}
-                        keyExtractor={(item, index) => index} // Assegure-se de ter uma chave única para cada item
+                        keyExtractor={(item, index) => index} // chave única para cada item
                         numColumns={2} // Define o número de colunas
                         contentContainerStyle={styles.cardsContainer} // Estilo do contêiner de itens 
                     />
@@ -136,10 +148,9 @@ export default function Configuracao() {
                                 </ScrollView>
                                 <View style={{ justifyContent: "flex-start", alignItems: "center", marginTop: 10, }}>
                                     <TouchableOpacity style={styles.closeButton} onPress={() => { navigation.navigate("Minhas Plantas", { newPlant: selectedPlant }); setModalPlant(false); }}>
-                                        <Text style={{ fontWeight: 'bold', fontSize: 18, textAlign: 'center', paddingLeft: 10, paddingRight: 10, paddingBottom: 5, color: 'white' }}>Adicionar em Minhas Plantas</Text>
+                                        <Text style={styles.textAddPlant}>Adicionar em Minhas Plantas</Text>
                                     </TouchableOpacity>
                                 </View>
-
                             </View>
                         </Modal>
                     )}
@@ -147,8 +158,7 @@ export default function Configuracao() {
             </ImageBackground >
         </>
     );
-}
-
+}//onPress={() => { handleAdd; setModalPlant(false); }}
 const styles = StyleSheet.create({
     container: {
         flex: 1,
@@ -260,5 +270,13 @@ const styles = StyleSheet.create({
         justifyContent: "flex-start",
         alignItems: "center",
     },
-
+    textAddPlant: {
+        fontWeight: 'bold',
+        fontSize: 18,
+        textAlign: 'center',
+        paddingLeft: 10,
+        paddingRight: 10,
+        paddingBottom: 5,
+        color: 'white'
+    },
 });

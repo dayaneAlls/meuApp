@@ -147,8 +147,17 @@ function AuthProvider({ children }) {
         navigation.goBack();
     }
 
+    async function addNewPlant(plantToken, ) {
+        const [error, response] = await to(api.post(`auth/plant/add?plantName=${search}`));
+
+        if (error) {
+            console.error('Erro ao enviar planta:', error);
+            return;
+        }
+    }
+
     return (
-        <AuthContext.Provider value={{ signed: !!user, userName, signUp, signOut, signIn, recuperarSenha, cadastrar, codeSubmit, loadingAuth, loading }}>
+        <AuthContext.Provider value={{ signed: !!user, userName, signUp, signOut, signIn, recuperarSenha, cadastrar, codeSubmit, addNewPlant, loadingAuth, loading }}>
             {children}
         </AuthContext.Provider>
     )

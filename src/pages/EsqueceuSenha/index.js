@@ -12,7 +12,6 @@ import {
     TouchableOpacity,
     Text,
     Modal,
-    Alert,
     ActivityIndicator,
 } from "react-native";
 
@@ -40,7 +39,6 @@ export default function EsqueceuSenha() {
         recuperarSenha(email);
         setMessageBox(false);
         setEnviarCodigo(true);
-
     }
 
     function handleCodeSubmit() {
@@ -60,9 +58,6 @@ export default function EsqueceuSenha() {
         }*/
         cadastrar(password, password2);
         setNovaSenha(false);
-
-
-
     }
 
     return (

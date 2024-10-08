@@ -45,8 +45,6 @@ function AuthRoutes() {
                 }}>
             </AuthStack.Screen>
         </AuthStack.Navigator>
-
-
     )
 }
 
