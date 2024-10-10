@@ -9,6 +9,7 @@ import {
     StyleSheet,
     TextInput,
     TouchableOpacity,
+    ImageBackground,
     Image,
     SafeAreaView,
 } from "react-native";
@@ -17,10 +18,14 @@ export default function Configuracao() {
 
     return (
         <>
-            <Header title='Configuracões'></Header>
+            <Header title='Configurações'></Header>
             <SafeAreaView >
-
-
+                <ImageBackground
+                    source={require("../../img/fundoPesquisar.jpg")}
+                    style={styles.imageBackground}
+                    imageStyle={{ opacity: 0.3 }}
+                >
+                </ImageBackground>
             </SafeAreaView>
         </>
     )
@@ -30,7 +35,11 @@ const styles = StyleSheet.create({
     container: {
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#e2e3da',
-
+    },
+    imageBackground: {
+        height: '100%',
+        width: '100%',
+        justifyContent: "center",
+        alignItems: "center",
     },
 })

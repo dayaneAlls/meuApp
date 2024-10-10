@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import to from 'await-to-js';
 import api from '../../services/api';
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import { LinearGradient } from "expo-linear-gradient";
 import { View, Text, StyleSheet, FlatList, SafeAreaView, Image, TouchableOpacity, Modal, ScrollView, Dimensions } from 'react-native';
 import Header from '../../components/Header'
 
@@ -9,10 +10,9 @@ import Header from '../../components/Header'
 export default function MinhasPlantas({ route }) {
 
     const [plantList, setPlantList] = useState([]);
-    const [modalCuidados, setModalCuidados] = useState(false);
-
-    const windowWidth = Dimensions.get('window').width;
-    const scrollWidth = windowWidth / 1 - 40;
+    const [modalCuidados, setModalCuidados] = useState(true);
+    const [modalLembrete, setModalLembrete] = useState(false);
+    const [modalHistorico, setModalHistorico] = useState(false);
 
     useEffect(() => {
         if (route.params?.newPlant) {
@@ -49,78 +49,100 @@ export default function MinhasPlantas({ route }) {
                         keyExtractor={(item, index) => index}
                         renderItem={renderItem}
                     />
-                    {modalCuidados && plantList && (
-                        <Modal
-                            animationType="slide"
-                            transparent={true}
-                            visible={modalCuidados}
-                            onRequestClose={() => setModalCuidados(false)}
-                        >
-                            <View style={styles.modalContainer}>
-                                <View style={styles.modalCard}>
-                                    <Image
-                                        source={{ uri: `data:image/jpeg;base64,${plantList.thumbnail}` }}
-                                        style={styles.modalImage}
-                                    />
-                                    <Text style={styles.textNamePlant}>{plantList.entity_name}</Text>
+                    <Modal
+                        animationType="slide"
+                        transparent={true}
+                        visible={modalCuidados}
+                        onRequestClose={() => setModalCuidados(false)}
+                    >
+                        <View style={styles.modalContainer}>
+                            <View style={styles.modalCard}>
+                                <Image
+                                    source={{ uri: `data:image/jpeg;base64,${plantList.thumbnail}` }}
+                                    style={styles.modalImage}
+                                />
+                                <Text style={styles.textNamePlant}>{plantList.entity_name}</Text>
+                            </View>
+                            <View style={styles.viewDetails}>
+                                <View style={styles.viewDescricao}>
+                                    <Text numberOfLines={7} style={styles.textDetailsPlant}>Nome comum: {plantList.common_names} {"\n"}Descrição: {plantList.description}</Text>
                                 </View>
-                                <View style={styles.viewDetails}>
-                                    <ScrollView horizontal={true}>
-                                        <View style={[styles.scrollModal, { width: scrollWidth }]}>
-                                            <Text numberOfLines={7} style={styles.textDetailsPlant}>Nome comum: {plantList.common_names} {"\n"}Descrição: {plantList.description.value.slice(0, 251)}</Text>
-                                            <MaterialIcons name="chevron-right" size={25} color="#3a4d39" style={{ paddingRight: 5 }} />
-                                        </View>
-                                        <View style={[styles.scrollModal, { width: scrollWidth }]}>
-                                            <Text style={styles.textDetailsPlant}>
-                                                {plantList.description.value.slice(251)}
-                                            </Text>
-                                            <MaterialIcons name="chevron-right" size={25} color="#3a4d39" style={{ paddingRight: 5 }} />
-                                        </View>
-                                        <View style={[styles.scrollModal, { width: scrollWidth }]}>
-                                            <Text style={styles.textDetailsPlant}>Sinonimos: {plantList.synonyms.join(',')}</Text>
-                                            <MaterialIcons name="chevron-right" size={25} color="#3a4d39" style={{ paddingRight: 5 }} />
-                                        </View>
-                                        <View style={[styles.scrollModal, { width: scrollWidth }]}>
-                                            <Text style={styles.textDetailsPlant}>
-                                                Classe: {plantList.taxonomy.class}
-                                                {"\n"}Gênero: {plantList.taxonomy.genus}
-                                                {"\n"}Ordem: {plantList.taxonomy.order}
-                                            </Text>
-                                            <MaterialIcons name="chevron-right" size={25} color="#3a4d39" style={{ paddingRight: 5 }} />
-                                        </View>
-                                    </ScrollView>
-                                    <View style={[styles.viewDetails2, { flexWrap: 'wrap', flexDirection: 'row' }]}>
-                                        <View style={styles.scrollModal2}>
-                                            <Icon name="sprout" size={35} color="green" style={{ paddingRight: 15 }} />
-                                            <Text style={styles.textDetailsPlant}>Partes Comestíveis: {plantList.edible_parts}</Text>
-                                        </View>
-                                        <View style={styles.scrollModal2}>
-                                            <Icon name="seed" size={40} color="#7a4526" style={{ paddingRight: 10 }} />
-                                            <Text style={styles.textDetailsPlant}>Cultivo: {plantList.propagation_methods.area}</Text>
-                                        </View>
-                                        <View style={styles.scrollModal2}>
-                                            <Icon name="water-check" size={40} color="#51a9e0" style={{ paddingRight: 10 }} />
-                                            <Text style={styles.textDetailsPlant}>{plantList.watering.max}</Text>
-                                        </View>
-                                        <View style={styles.scrollModal2}>
-                                            <Icon name="white-balance-sunny" size={40} color="#f5f125" style={{ paddingRight: 10 }} />
-                                            <Text style={styles.textDetailsPlant}>{plantList.Iluminacao}</Text>
-                                        </View>
+                                <View style={[styles.viewDetails2, { flexWrap: 'wrap', flexDirection: 'row' }]}>
+                                    <View style={styles.viewDescricao2}>
+                                        <Icon name="sprout" size={35} color="green" style={{ paddingRight: 15 }} />
+                                        <Text style={styles.textDetailsPlant}>Partes {"\n"}Comestíveis: {plantList.edible_parts}</Text>
+                                    </View>
+                                    <View style={styles.viewDescricao2}>
+                                        <Icon name="seed" size={40} color="#7a4526" style={{ paddingRight: 10 }} />
+                                        <Text style={styles.textDetailsPlant}>Cultivo: {plantList.propagation_methods}</Text>
+                                    </View>
+                                    <View style={styles.viewDescricao2}>
+                                        <Icon name="water-check" size={40} color="#51a9e0" style={{ paddingRight: 10 }} />
+                                        <Text style={styles.textDetailsPlant}>{plantList.watering}</Text>
+                                    </View>
+                                    <View style={styles.viewDescricao2}>
+                                        <Icon name="white-balance-sunny" size={40} color="#f5f125" style={{ paddingRight: 10 }} />
+                                        <Text style={styles.textDetailsPlant}>{plantList.Iluminacao}</Text>
                                     </View>
                                 </View>
-                                <View style={styles.modalCard}>
-                                    <TouchableOpacity style={styles.closeButton} onPress={() => setModalPlant(false)}>
-                                        <Text style={{ fontWeight: 'bold', fontSize: 25, textAlign: 'center', paddingLeft: 10, paddingRight: 10, color: 'white' }}>Voltar</Text>
-                                    </TouchableOpacity>
-                                </View>
-
                             </View>
-                        </Modal>
-                    )}
+                            <View style={[styles.modalCard, { flexWrap: 'wrap', flexDirection: 'row' }]}>
+                                <View style={styles.viewButtons}>
+                                    <LinearGradient style={styles.buttons}
+                                        colors={['#4e6e4d', '#3a4d39']}
+                                        start={{ x: 1, y: 0 }} // Ponto inicial do gradiente
+                                        end={{ x: 0, y: 1 }}>
+                                        <TouchableOpacity onPress={() => { setModalCuidados(false); setModalLembrete(true); }}>
+                                            <Text style={{ fontWeight: 'bold', fontSize: 20, textAlign: 'center', paddingLeft: 10, paddingRight: 10, color: 'white' }}>Adicionar{"\n"}lembrete</Text>
+                                        </TouchableOpacity>
+                                    </LinearGradient>
+                                </View>
+                                <View style={styles.viewButtons}>
+                                    <LinearGradient style={styles.buttons}
+                                        colors={['#4e6e4d', '#3a4d39']} //['#5cd19c', '#86db84', '#47ad7f']
+                                        start={{ x: 1, y: 0 }} // Ponto inicial do gradiente
+                                        end={{ x: 0, y: 1 }}>
+                                        <TouchableOpacity onPress={() => { setModalCuidados(false); setModalHistorico(true); }}>
+                                            <Text style={{ fontWeight: 'bold', fontSize: 20, textAlign: 'center', paddingLeft: 10, paddingRight: 10, color: 'white' }}>Histórico de{"\n"}cuidados</Text>
+                                        </TouchableOpacity>
+                                    </LinearGradient>
+                                </View>
+                            </View>
 
-                </View>
-                <View style={styles.container}>
+                        </View>
+                    </Modal>
+                    <Modal
+                        animationType="slide"
+                        transparent={true}
+                        visible={modalLembrete}
+                        onRequestClose={() => setModalLembrete(false)}
+                    >
+                        <View style={styles.modalContainer}>
+                            <TouchableOpacity style={styles.buttons} onPress={() => { setModalLembrete(false); setModalCuidados(true) }}>
+                                <Text style={{ fontWeight: 'bold', fontSize: 20, textAlign: 'center', paddingLeft: 10, paddingRight: 10, color: 'white' }}>Voltar</Text>
+                            </TouchableOpacity>
+                            <View style={styles.viewButtons}>
+                                <LinearGradient style={styles.buttons}
+                                    colors={['#4e6e4d', '#3a4d39']} //['#5cd19c', '#86db84', '#47ad7f']
+                                    start={{ x: 1, y: 0 }} // Ponto inicial do gradiente
+                                    end={{ x: 0, y: 1 }}>
+                                    <TouchableOpacity onPress={() => { setModalCuidados(false); setModalHistorico(true); }}>
+                                        <Text style={{ fontWeight: 'bold', fontSize: 20, textAlign: 'center', paddingLeft: 10, paddingRight: 10, color: 'white' }}>Salvar</Text>
+                                    </TouchableOpacity>
+                                </LinearGradient>
+                            </View>
+                        </View>
+                    </Modal>
+                    <Modal
+                        animationType="slide"
+                        transparent={true}
+                        visible={modalHistorico}
+                        onRequestClose={() => setModalHistorico(false)}
+                    >
+                        <View>
 
+                        </View>
+                    </Modal>
                 </View>
             </SafeAreaView>
         </>
@@ -163,16 +185,6 @@ const styles = StyleSheet.create({
         height: '100%',
 
     },
-    deleteButton: {
-        marginTop: 10,
-        padding: 10,
-        alignItems: 'flex-end',
-        borderRadius: 8,
-    },
-    deleteButtonText: {
-        color: 'white',
-        fontWeight: 'bold',
-    },
     iconPlace: {
         position: "absolute",
         left: 100,
@@ -181,10 +193,8 @@ const styles = StyleSheet.create({
         color: "rgba(58, 77, 57,.7)",
     },
     modalContainer: {
-        marginTop: 30,
-        marginHorizontal: 5,
+        marginTop: 50,
         backgroundColor: 'white', //#faf2ed
-        borderRadius: 25,
         padding: 10,
         flex: 1,
     },
@@ -195,11 +205,14 @@ const styles = StyleSheet.create({
         marginBottom: 15,
         marginTop: 10,
     },
-    closeButton: {
+    buttons: {
         alignItems: 'center',
-        padding: 5,
+        padding: 10,
         backgroundColor: "#587f56",
-        borderRadius: 25,
+        borderRadius: 20,
+        marginTop: 35,
+        shadowColor: 'black',
+        elevation: 15,
     },
     viewDetails: {
         justifyContent: "center",
@@ -217,11 +230,11 @@ const styles = StyleSheet.create({
 
     },
     modalCard: {
-        justifyContent: "flex-start",
-        alignItems: "center"
-
+        justifyContent: "center",
+        alignItems: "space-between",
+        flexDirection: 'row',
     },
-    scrollModal: {
+    viewDescricao: {
         //backgroundColor: '#c0c9bf',
         borderColor: "#587f56",
         borderWidth: 2,
@@ -235,7 +248,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         flexDirection: 'row',
     },
-    scrollModal2: {
+    viewDescricao2: {
         backgroundColor: '#c0c9bf',
         marginTop: 5,
         marginBottom: 5,
@@ -250,5 +263,12 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         marginBottom: 20,
+    },
+    viewButtons: {
+        marginTop: 5,
+        marginBottom: 5,
+        marginHorizontal: 10,
+        justifyContent: "space-between",
+        flexDirection: 'row',
     },
 })

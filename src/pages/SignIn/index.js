@@ -14,7 +14,7 @@ import { AuthContext } from "../../contexts/auth";
 import { LinearGradient } from "expo-linear-gradient";
 
 export default function SignIn() {
-  const { signIn, loadingAuth } = useContext(AuthContext);
+  const { signIn, loading } = useContext(AuthContext);
   const navigation = useNavigation();
   const [hidePass, setHidePass] = useState(true);
   const [email, setEmail] = useState("");

@@ -10,7 +10,6 @@ export const AuthContext = createContext({});
 function AuthProvider({ children }) {
     const [user, setUser] = useState(null);
     const [userName, setUserName] = useState(null);
-    const [loadingAuth, setLoadingAuth] = useState(false);
     const [codigo, setCodigo] = useState(null);
     const [loading, setLoading] = useState(false);
 
@@ -18,8 +17,7 @@ function AuthProvider({ children }) {
 
     useEffect(() => {
         async function loadStorage() {
-            setLoadingAuth(true);
-
+            setLoading(true);
             try {
                 const storageUserToken = await AsyncStorage.getItem("@userToken");
 
@@ -35,7 +33,7 @@ function AuthProvider({ children }) {
                 console.log("Erro ao carregar usuário do AsyncStorage", error);
                 setUser(null);
             } finally {
-                setLoadingAuth(false);
+                setLoading(false);
             }
         }
 
@@ -43,7 +41,7 @@ function AuthProvider({ children }) {
     }, []);
 
     async function signUp(email, password, userName, passwordConfirmation) {
-        setLoadingAuth(true);
+        setLoading(true);
         try {
             const [error, response] = await to(
                 api.post("unauth/authentication/register", {
@@ -56,10 +54,10 @@ function AuthProvider({ children }) {
 
             if (error) {
                 console.log(error);
-                setLoadingAuth(false);
+                setLoading(false);
                 throw new Error("Erro ao efetuar Cadastro", error);
             }
-            setLoadingAuth(false);
+            setLoading(false);
             navigation.goBack();
 
         } catch (err) {
@@ -68,14 +66,17 @@ function AuthProvider({ children }) {
     }
 
     async function signOut() {
-        await AsyncStorage.clear().then(() => {
+        try {
+            await AsyncStorage.removeItem("@userToken"); // Remove apenas o token do usuário
             setUser(null);
-        })
+        } catch (error) {
+            console.log("Erro ao remover token do AsyncStorage", error);
+        }
     }
 
 
     async function signIn(email, password) {
-        setLoadingAuth(true);
+        setLoading(true);
 
         try {
             const [error, response] = await to(api.post('unauth/authentication/signin',
@@ -87,67 +88,67 @@ function AuthProvider({ children }) {
 
             const userToken = response.data.userToken;
             const userInfo = jwtDecode(userToken);
-            const userName = userInfo.name;
             console.log(userToken);
 
             await AsyncStorage.setItem("@userToken", userToken);
             api.defaults.headers["Authorization"] = `Bearer ${userToken}`;
 
+            setUser(userInfo); // Atualiza o usuário
             setUserName(userName);
             console.log(userName);
-            setLoadingAuth(false);
+            setLoading(false);
 
         } catch (err) {
             console.log("Erro ao logar", err);
-            setLoadingAuth(false);
+            setLoading(false);
         }
     }
 
 
     async function recuperarSenha(email) {
-        setLoadingAuth(true);
+        setLoading(true);
         const [error, response] = await to(api.post('unauth/user/password/solicit',
             { email },
         ))
         if (error) {
             console.log(error)
-            setLoadingAuth(false);
+            setLoading(false);
             throw new Error("Erro ao enviar e-mail", error)
         }
 
-        setLoadingAuth(false);
+        setLoading(false);
     }
 
     async function codeSubmit(codigo) {
-        setLoadingAuth(true);
+        setLoading(true);
         const [error, response] = await to(api.post('unauth/user/password/confirm',
             { passwordResetCode: codigo },
         ))
         if (error) {
             console.log(error)
-            setLoadingAuth(false);
+            setLoading(false);
             throw new Error("Erro ao enviar código", error)
         }
         setCodigo(codigo);
-        setLoadingAuth(false);
+        setLoading(false);
     }
 
     async function cadastrar(password, confirmPassword) {
-        setLoadingAuth(true);
+        setLoading(true);
         const [error, response] = await to(api.post('unauth/user/password/new',
             { password, passwordConfirmation: confirmPassword, passwordResetCode: codigo },
         ))
         if (error) {
             console.log(error)
-            setLoadingAuth(false);
+            setLoading(false);
             throw new Error("Erro ao enviar senhas", error)
         }
         setCodigo(null);
-        setLoadingAuth(false);
+        setLoading(false);
         navigation.goBack();
     }
 
-    async function addNewPlant(plantToken, ) {
+    async function addNewPlant(plantToken,) {
         const [error, response] = await to(api.post(`auth/plant/add?plantName=${search}`));
 
         if (error) {
@@ -157,7 +158,7 @@ function AuthProvider({ children }) {
     }
 
     return (
-        <AuthContext.Provider value={{ signed: !!user, userName, signUp, signOut, signIn, recuperarSenha, cadastrar, codeSubmit, addNewPlant, loadingAuth, loading }}>
+        <AuthContext.Provider value={{ signed: !!user, userName, signUp, signOut, signIn, recuperarSenha, cadastrar, codeSubmit, addNewPlant, loading }}>
             {children}
         </AuthContext.Provider>
     )

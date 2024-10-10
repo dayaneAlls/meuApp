@@ -146,7 +146,7 @@ export default function Visitante() {
                 <View style={[styles.viewDetails2, { flexWrap: 'wrap', flexDirection: 'row' }]}>
                   <View style={styles.scrollModal2}>
                     <Icon name="sprout" size={35} color="green" style={{ paddingRight: 15 }} />
-                    <Text style={styles.textDetailsPlant}>Partes Comestíveis: {plantInfo.edible_parts}</Text>
+                    <Text style={styles.textDetailsPlant}>Partes {"\n"}Comestíveis: {plantInfo.edible_parts}</Text>
                   </View>
                   <View style={styles.scrollModal2}>
                     <Icon name="seed" size={40} color="#7a4526" style={{ paddingRight: 10 }} />
