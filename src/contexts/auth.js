@@ -88,6 +88,7 @@ function AuthProvider({ children }) {
 
             const userToken = response.data.userToken;
             const userInfo = jwtDecode(userToken);
+            const userName = userInfo.name;
             console.log(userToken);
 
             await AsyncStorage.setItem("@userToken", userToken);

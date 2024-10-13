@@ -1,17 +1,16 @@
 import React, { useState, useEffect } from "react";
-import to from 'await-to-js';
-import api from '../../services/api';
+import api from "../../services/api";
+import to from "await-to-js";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
-import { LinearGradient } from "expo-linear-gradient";
-import { View, Text, StyleSheet, FlatList, SafeAreaView, Image, TouchableOpacity, Modal, ScrollView, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, FlatList, SafeAreaView, Image, TouchableOpacity, Modal, ScrollView, Dimensions, ImageBackground } from 'react-native';
 import Header from '../../components/Header'
-
+import ModalLembretes from "../../components/ModalLembretes/lembretes";
 
 export default function MinhasPlantas({ route }) {
 
     const [plantList, setPlantList] = useState([]);
-    const [modalCuidados, setModalCuidados] = useState(true);
-    const [modalLembrete, setModalLembrete] = useState(false);
+    const [modalCuidados, setModalCuidados] = useState(false);
+    const [modalLembrete, setModalLembrete] = useState(true);
     const [modalHistorico, setModalHistorico] = useState(false);
 
     useEffect(() => {
@@ -33,7 +32,7 @@ export default function MinhasPlantas({ route }) {
                 <TouchableOpacity
                     onPress={() => handleDelete(index)} // Chama a função handleDelete passando o index do item
                 >
-                    <Icon name="delete-empty" style={styles.iconPlace} />
+                    <Icon name="trash-can-outline" style={styles.iconPlace} />
                 </TouchableOpacity>
             </TouchableOpacity>
         </View>
@@ -43,108 +42,109 @@ export default function MinhasPlantas({ route }) {
         <>
             <Header title='Minhas Plantas'></Header>
             <SafeAreaView >
-                <View style={styles.container}>
-                    <FlatList
-                        data={plantList}
-                        keyExtractor={(item, index) => index}
-                        renderItem={renderItem}
-                    />
-                    <Modal
-                        animationType="slide"
-                        transparent={true}
-                        visible={modalCuidados}
-                        onRequestClose={() => setModalCuidados(false)}
-                    >
-                        <View style={styles.modalContainer}>
-                            <View style={styles.modalCard}>
-                                <Image
-                                    source={{ uri: `data:image/jpeg;base64,${plantList.thumbnail}` }}
-                                    style={styles.modalImage}
-                                />
-                                <Text style={styles.textNamePlant}>{plantList.entity_name}</Text>
-                            </View>
-                            <View style={styles.viewDetails}>
-                                <View style={styles.viewDescricao}>
-                                    <Text numberOfLines={7} style={styles.textDetailsPlant}>Nome comum: {plantList.common_names} {"\n"}Descrição: {plantList.description}</Text>
+                <ImageBackground
+                    //  source={require("../../img/fundocasa.jpg")}
+                    // source={require("../../img/fundoMinhasPlantas.png")}
+                    style={styles.imageBackground}
+                    imageStyle={{ opacity: 0.5 }}
+                >
+                    <View style={styles.container}>
+                        <FlatList
+                            data={plantList}
+                            keyExtractor={(item, index) => index}
+                            renderItem={renderItem}
+                        />
+                        <Modal
+                            animationType="slide"
+                            transparent={true}
+                            visible={modalCuidados}
+                            onRequestClose={() => setModalCuidados(false)}
+                        >
+                            <View style={styles.modalContainer}>
+                                <View style={styles.modalHeader}>
+                                    <TouchableOpacity onPress={() => setModalCuidados(false)}>
+                                        <Icon name="arrow-left" style={styles.iconVoltar} />
+                                    </TouchableOpacity>
+                                    <Text style={styles.modalTitle}>Cuidados Minhas Plantas</Text>
                                 </View>
-                                <View style={[styles.viewDetails2, { flexWrap: 'wrap', flexDirection: 'row' }]}>
-                                    <View style={styles.viewDescricao2}>
-                                        <Icon name="sprout" size={35} color="green" style={{ paddingRight: 15 }} />
-                                        <Text style={styles.textDetailsPlant}>Partes {"\n"}Comestíveis: {plantList.edible_parts}</Text>
+                                <View style={styles.modalCard}>
+                                    <Image
+                                        source={{ uri: `data:image/jpeg;base64,${plantList.thumbnail}` }}
+                                        style={styles.modalImage}
+                                    />
+                                    <Text style={styles.textNamePlant}>{plantList.entity_name}</Text>
+                                </View>
+                                <View style={styles.viewDetails}>
+                                    <View style={styles.viewDescricao}>
+                                        <Text numberOfLines={7} style={styles.textDetailsPlant}>
+                                            <Text style={{ fontWeight: 'bold' }}>Nome comum:</Text> {plantList.common_names}okotre
+                                            <Text style={{ fontWeight: 'bold' }}>{"\n"}Descrição:</Text> {plantList.description}Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.</Text>
                                     </View>
-                                    <View style={styles.viewDescricao2}>
-                                        <Icon name="seed" size={40} color="#7a4526" style={{ paddingRight: 10 }} />
-                                        <Text style={styles.textDetailsPlant}>Cultivo: {plantList.propagation_methods}</Text>
-                                    </View>
-                                    <View style={styles.viewDescricao2}>
-                                        <Icon name="water-check" size={40} color="#51a9e0" style={{ paddingRight: 10 }} />
-                                        <Text style={styles.textDetailsPlant}>{plantList.watering}</Text>
-                                    </View>
-                                    <View style={styles.viewDescricao2}>
-                                        <Icon name="white-balance-sunny" size={40} color="#f5f125" style={{ paddingRight: 10 }} />
-                                        <Text style={styles.textDetailsPlant}>{plantList.Iluminacao}</Text>
+                                    <View style={[styles.viewDetails2, { flexWrap: 'wrap', flexDirection: 'row' }]}>
+                                        <View style={styles.viewDescricao2}>
+                                            <Icon name="sprout" size={35} color="green" style={{ paddingRight: 15 }} />
+                                            <Text style={styles.textDetailsPlant}>
+                                                <Text style={{ fontWeight: 'bold' }}>Comestível:</Text>
+                                                {"\n"}{plantList.edible_parts}usdf0ifporeit-0
+                                            </Text>
+                                        </View>
+                                        <View style={styles.viewDescricao2}>
+                                            <Icon name="seed" size={40} color="#7a4526" style={{ paddingRight: 10 }} />
+                                            <Text style={styles.textDetailsPlant}>
+                                                <Text style={{ fontWeight: 'bold' }}>Cultivo:</Text>
+                                                {"\n"}{plantList.propagation_methods}gpyrtyort-
+                                            </Text>
+                                        </View>
+                                        <View style={styles.viewDescricao2}>
+                                            <Icon name="water-check" size={40} color="#51a9e0" style={{ paddingRight: 10 }} />
+                                            <Text style={styles.textDetailsPlant}>
+                                                <Text style={{ fontWeight: 'bold' }}>Rega:</Text>
+                                                {"\n"}{plantList.watering}kgkfhpfgt
+                                            </Text>
+                                        </View>
+                                        <View style={styles.viewDescricao2}>
+                                            <Icon name="white-balance-sunny" size={40} color="#f5f125" style={{ paddingRight: 10 }} />
+                                            <Text style={styles.textDetailsPlant}>
+                                                <Text style={{ fontWeight: 'bold' }}>Iluminação:</Text>
+                                                {"\n"}{plantList.Iluminacao}kghokfh-f
+                                            </Text>
+                                        </View>
                                     </View>
                                 </View>
-                            </View>
-                            <View style={[styles.modalCard, { flexWrap: 'wrap', flexDirection: 'row' }]}>
-                                <View style={styles.viewButtons}>
-                                    <LinearGradient style={styles.buttons}
-                                        colors={['#4e6e4d', '#3a4d39']}
-                                        start={{ x: 1, y: 0 }} // Ponto inicial do gradiente
-                                        end={{ x: 0, y: 1 }}>
-                                        <TouchableOpacity onPress={() => { setModalCuidados(false); setModalLembrete(true); }}>
+                                <View style={[styles.modalCard, { flexWrap: 'wrap', flexDirection: 'row' }]}>
+                                    <View style={styles.viewButtons}>
+                                        <TouchableOpacity style={styles.buttons} onPress={() => { setModalCuidados(false); setModalLembrete(true); }}>
                                             <Text style={{ fontWeight: 'bold', fontSize: 20, textAlign: 'center', paddingLeft: 10, paddingRight: 10, color: 'white' }}>Adicionar{"\n"}lembrete</Text>
                                         </TouchableOpacity>
-                                    </LinearGradient>
-                                </View>
-                                <View style={styles.viewButtons}>
-                                    <LinearGradient style={styles.buttons}
-                                        colors={['#4e6e4d', '#3a4d39']} //['#5cd19c', '#86db84', '#47ad7f']
-                                        start={{ x: 1, y: 0 }} // Ponto inicial do gradiente
-                                        end={{ x: 0, y: 1 }}>
-                                        <TouchableOpacity onPress={() => { setModalCuidados(false); setModalHistorico(true); }}>
+                                    </View>
+                                    <View style={styles.viewButtons}>
+                                        <TouchableOpacity style={styles.buttons} onPress={() => { setModalCuidados(false); setModalHistorico(true); }}>
                                             <Text style={{ fontWeight: 'bold', fontSize: 20, textAlign: 'center', paddingLeft: 10, paddingRight: 10, color: 'white' }}>Histórico de{"\n"}cuidados</Text>
                                         </TouchableOpacity>
-                                    </LinearGradient>
+                                    </View>
                                 </View>
                             </View>
+                        </Modal>
+                        <Modal
+                            animationType="slide"
+                            transparent={true}
+                            visible={modalLembrete}
+                        >
+                            <ModalLembretes setVisible={() => { setModalCuidados(true); setModalLembrete(false); }}></ModalLembretes>
+                        </Modal>
+                        <Modal
+                            animationType="slide"
+                            transparent={true}
+                            visible={modalHistorico}
+                            onRequestClose={() => setModalHistorico(false)}
+                        >
+                            <View>
 
-                        </View>
-                    </Modal>
-                    <Modal
-                        animationType="slide"
-                        transparent={true}
-                        visible={modalLembrete}
-                        onRequestClose={() => setModalLembrete(false)}
-                    >
-                        <View style={styles.modalContainer}>
-                            <TouchableOpacity style={styles.buttons} onPress={() => { setModalLembrete(false); setModalCuidados(true) }}>
-                                <Text style={{ fontWeight: 'bold', fontSize: 20, textAlign: 'center', paddingLeft: 10, paddingRight: 10, color: 'white' }}>Voltar</Text>
-                            </TouchableOpacity>
-                            <View style={styles.viewButtons}>
-                                <LinearGradient style={styles.buttons}
-                                    colors={['#4e6e4d', '#3a4d39']} //['#5cd19c', '#86db84', '#47ad7f']
-                                    start={{ x: 1, y: 0 }} // Ponto inicial do gradiente
-                                    end={{ x: 0, y: 1 }}>
-                                    <TouchableOpacity onPress={() => { setModalCuidados(false); setModalHistorico(true); }}>
-                                        <Text style={{ fontWeight: 'bold', fontSize: 20, textAlign: 'center', paddingLeft: 10, paddingRight: 10, color: 'white' }}>Salvar</Text>
-                                    </TouchableOpacity>
-                                </LinearGradient>
                             </View>
-                        </View>
-                    </Modal>
-                    <Modal
-                        animationType="slide"
-                        transparent={true}
-                        visible={modalHistorico}
-                        onRequestClose={() => setModalHistorico(false)}
-                    >
-                        <View>
-
-                        </View>
-                    </Modal>
-                </View>
-            </SafeAreaView>
+                        </Modal>
+                    </View >
+                </ImageBackground >
+            </SafeAreaView >
         </>
     )
 }
@@ -161,7 +161,12 @@ const styles = StyleSheet.create({
         borderRadius: 15,
         padding: 15,
         flex: 1,
-
+        borderWidth: 1,
+        borderColor: "#587f56",
+    },
+    imageBackground: {
+        height: '100%',
+        width: '100%',
     },
     cardText: {
         fontWeight: 'bold',
@@ -183,18 +188,16 @@ const styles = StyleSheet.create({
         alignItems: "center",
         width: '100%',
         height: '100%',
-
     },
     iconPlace: {
         position: "absolute",
         left: 100,
         top: -55,
         fontSize: 50,
-        color: "rgba(58, 77, 57,.7)",
+        color: "#2a3b29",
     },
     modalContainer: {
-        marginTop: 50,
-        backgroundColor: 'white', //#faf2ed
+        backgroundColor: '#f6fff5', //#faf2ed
         padding: 10,
         flex: 1,
     },
@@ -209,10 +212,11 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         padding: 10,
         backgroundColor: "#587f56",
-        borderRadius: 20,
-        marginTop: 35,
+        borderRadius: 25,
+        marginTop: 20,
         shadowColor: 'black',
-        elevation: 15,
+        elevation: 8,
+        width: 170,
     },
     viewDetails: {
         justifyContent: "center",
@@ -235,9 +239,9 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
     },
     viewDescricao: {
-        //backgroundColor: '#c0c9bf',
+        backgroundColor: '#d0e0ce',
         borderColor: "#587f56",
-        borderWidth: 2,
+        borderWidth: 1,
         marginTop: 10,
         marginBottom: 20,
         marginHorizontal: 5,
@@ -249,14 +253,19 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
     },
     viewDescricao2: {
-        backgroundColor: '#c0c9bf',
+        backgroundColor: 'white',
         marginTop: 5,
-        marginBottom: 5,
+        marginBottom: 10,
         marginHorizontal: 5,
         borderRadius: 20,
-        padding: 15,
-        justifyContent: "space-between",
+        padding: 10,
+        justifyContent: "center",
+        alignItems: "center",
         flexDirection: 'row',
+        width: "47%",
+        height: "50%",
+        borderWidth: 3,
+        borderColor: "#b5d4b4",
     },
     viewDetails2: {
         justifyContent: "space-between",
@@ -270,5 +279,22 @@ const styles = StyleSheet.create({
         marginHorizontal: 10,
         justifyContent: "space-between",
         flexDirection: 'row',
+    },
+    iconVoltar: {
+        fontSize: 30,
+        color: '#2a3b29',
+    },
+    modalTitle: {
+        fontSize: 25,
+        marginLeft: 10,
+        color: '#2a3b29',
+        fontWeight: "bold",
+        textAlign: "center"
+    },
+    modalHeader: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "flex-start",
+
     },
 })

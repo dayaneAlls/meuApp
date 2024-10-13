@@ -3,6 +3,7 @@ import to from 'await-to-js';
 import api from '../../services/api';
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons'
+import { LinearGradient } from "expo-linear-gradient";
 import {
   View,
   Text,
@@ -121,7 +122,9 @@ export default function Visitante() {
               <View style={styles.viewDetails}>
                 <ScrollView horizontal={true}>
                   <View style={[styles.scrollModal, { width: scrollWidth }]}>
-                    <Text numberOfLines={7} style={styles.textDetailsPlant}>Nome comum: {plantInfo.common_names} {"\n"}Descrição: {plantInfo.description.value.slice(0, 251)}</Text>
+                    <Text numberOfLines={7} style={styles.textDetailsPlant}>
+                      <Text style={{ fontWeight: 'bold' }}>Nome comum:</Text> {plantInfo.common_names}
+                      <Text style={{ fontWeight: 'bold' }}>{"\n"}Descrição:</Text> {plantInfo.description.value.slice(0, 251)}</Text>
                     <MaterialIcons name="chevron-right" size={25} color="#3a4d39" style={{ paddingRight: 5 }} />
                   </View>
                   <View style={[styles.scrollModal, { width: scrollWidth }]}>
@@ -131,14 +134,16 @@ export default function Visitante() {
                     <MaterialIcons name="chevron-right" size={25} color="#3a4d39" style={{ paddingRight: 5 }} />
                   </View>
                   <View style={[styles.scrollModal, { width: scrollWidth }]}>
-                    <Text style={styles.textDetailsPlant}>Sinonimos: {plantInfo.synonyms.join(',')}</Text>
+                    <Text style={styles.textDetailsPlant}>
+                      <Text style={{ fontWeight: 'bold' }}>Sinonimos:</Text> {plantInfo.synonyms.join(',')}
+                    </Text>
                     <MaterialIcons name="chevron-right" size={25} color="#3a4d39" style={{ paddingRight: 5 }} />
                   </View>
                   <View style={[styles.scrollModal, { width: scrollWidth }]}>
                     <Text style={styles.textDetailsPlant}>
-                      Classe: {plantInfo.taxonomy.class}
-                      {"\n"}Gênero: {plantInfo.taxonomy.genus}
-                      {"\n"}Ordem: {plantInfo.taxonomy.order}
+                      <Text style={{ fontWeight: 'bold' }}>Classe:</Text> {plantInfo.taxonomy.class}
+                      <Text style={{ fontWeight: 'bold' }}>{"\n"}Gênero:</Text> {plantInfo.taxonomy.genus}
+                      <Text style={{ fontWeight: 'bold' }}>{"\n"}Ordem:</Text> {plantInfo.taxonomy.order}
                     </Text>
                     <MaterialIcons name="chevron-right" size={25} color="#3a4d39" style={{ paddingRight: 5 }} />
                   </View>
@@ -146,28 +151,44 @@ export default function Visitante() {
                 <View style={[styles.viewDetails2, { flexWrap: 'wrap', flexDirection: 'row' }]}>
                   <View style={styles.scrollModal2}>
                     <Icon name="sprout" size={35} color="green" style={{ paddingRight: 15 }} />
-                    <Text style={styles.textDetailsPlant}>Partes {"\n"}Comestíveis: {plantInfo.edible_parts}</Text>
+                    <Text style={styles.textDetailsPlant}>
+                      <Text style={{ fontWeight: 'bold' }}>Comestível:</Text>
+                      {"\n"}{plantInfo.edible_parts}
+                    </Text>
                   </View>
                   <View style={styles.scrollModal2}>
                     <Icon name="seed" size={40} color="#7a4526" style={{ paddingRight: 10 }} />
-                    <Text style={styles.textDetailsPlant}>Cultivo: {plantInfo.propagation_methods.area}</Text>
+                    <Text style={styles.textDetailsPlant}>
+                      <Text style={{ fontWeight: 'bold' }}>Cultivo:</Text>
+                      {"\n"}{plantInfo.propagation_methods.area}
+                    </Text>
                   </View>
                   <View style={styles.scrollModal2}>
                     <Icon name="water-check" size={40} color="#51a9e0" style={{ paddingRight: 10 }} />
-                    <Text style={styles.textDetailsPlant}>{plantInfo.watering.max}</Text>
+                    <Text style={styles.textDetailsPlant}>
+                      <Text style={{ fontWeight: 'bold' }}>Rega:</Text>
+                      {"\n"}{plantInfo.watering.max}
+                    </Text>
                   </View>
                   <View style={styles.scrollModal2}>
                     <Icon name="white-balance-sunny" size={40} color="#f5f125" style={{ paddingRight: 10 }} />
-                    <Text style={styles.textDetailsPlant}>{plantInfo.Iluminacao}</Text>
+                    <Text style={styles.textDetailsPlant}>
+                      <Text style={{ fontWeight: 'bold' }}>Iluminação:</Text>
+                      {"\n"}{plantInfo.Iluminacao}
+                    </Text>
                   </View>
                 </View>
               </View>
               <View style={styles.modalCard}>
-                <TouchableOpacity style={styles.closeButton} onPress={() => setModalPlant(false)}>
-                  <Text style={{ fontWeight: 'bold', fontSize: 25, textAlign: 'center', paddingLeft: 10, paddingRight: 10, color: 'white' }}>Voltar</Text>
-                </TouchableOpacity>
+                <LinearGradient style={styles.closeButton}
+                  colors={['#4e6e4d', '#3a4d39']}
+                  start={{ x: 1, y: 0 }} // Ponto inicial do gradiente
+                  end={{ x: 0, y: 1 }}>
+                  <TouchableOpacity onPress={() => setModalPlant(false)}>
+                    <Text style={{ fontWeight: 'bold', fontSize: 25, textAlign: 'center', paddingLeft: 10, paddingRight: 10, color: 'white' }}>Voltar</Text>
+                  </TouchableOpacity>
+                </LinearGradient>
               </View>
-
             </View>
           </Modal>
         )}
@@ -248,7 +269,7 @@ const styles = StyleSheet.create({
   modalContainer: {
     marginTop: 30,
     marginHorizontal: 5,
-    backgroundColor: 'white', //#faf2ed
+    backgroundColor: '#f4f5eb', //#faf2ed
     borderRadius: 25,
     padding: 10,
     flex: 1,
@@ -259,12 +280,16 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     marginBottom: 15,
     marginTop: 10,
+    borderWidth: 1,
+    borderColor: "#587f56",
   },
   closeButton: {
     alignItems: 'center',
-    padding: 5,
+    padding: 10,
     backgroundColor: "#587f56",
-    borderRadius: 25,
+    borderRadius: 20,
+    width: 170,
+    marginTop: 20,
   },
   viewDetails: {
     justifyContent: "center",
@@ -287,7 +312,7 @@ const styles = StyleSheet.create({
 
   },
   scrollModal: {
-    //backgroundColor: '#c0c9bf',
+    backgroundColor: 'white',
     borderColor: "#587f56",
     borderWidth: 2,
     marginTop: 10,
@@ -304,17 +329,22 @@ const styles = StyleSheet.create({
   scrollModal2: {
     backgroundColor: '#c0c9bf',
     marginTop: 5,
-    marginBottom: 5,
+    marginBottom: 10,
     marginHorizontal: 5,
     borderRadius: 20,
-    padding: 15,
-    justifyContent: "space-between",
+    padding: 10,
+    justifyContent: "center",
+    alignItems: "center",
     flexDirection: 'row',
+    width: "47%",
+    height: "50%",
+    borderWidth: 0.6,
+    borderColor: "#587f56",
   },
   viewDetails2: {
     justifyContent: "space-between",
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 25,
   },
 });
