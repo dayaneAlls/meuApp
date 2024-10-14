@@ -67,59 +67,63 @@ export default function MinhasPlantas({ route }) {
                                     </TouchableOpacity>
                                     <Text style={styles.modalTitle}>Cuidados Minhas Plantas</Text>
                                 </View>
-                                <View style={styles.modalCard}>
-                                    <Image
-                                        source={{ uri: `data:image/jpeg;base64,${plantList.thumbnail}` }}
-                                        style={styles.modalImage}
-                                    />
-                                    <Text style={styles.textNamePlant}>{plantList.entity_name}</Text>
-                                </View>
-                                <View style={styles.viewDetails}>
-                                    <View style={styles.viewDescricao}>
-                                        <Text numberOfLines={7} style={styles.textDetailsPlant}>
-                                            <Text style={{ fontWeight: 'bold' }}>Nome comum:</Text> {plantList.common_names}okotre
-                                            <Text style={{ fontWeight: 'bold' }}>{"\n"}Descrição:</Text> {plantList.description}Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.</Text>
+                                <View style={{ padding: 20 }}>
+                                    <View style={styles.modalCard}>
+                                        <Image
+                                            source={{ uri: `data:image/jpeg;base64,${plantList.thumbnail}` }}
+                                            style={styles.modalImage}
+                                        />
+                                        <Text style={styles.textNamePlant}>{plantList.entity_name}</Text>
                                     </View>
-                                    <View style={[styles.viewDetails2, { flexWrap: 'wrap', flexDirection: 'row' }]}>
-                                        <View style={styles.viewDescricao2}>
-                                            <Icon name="sprout" size={35} color="green" style={{ paddingRight: 15 }} />
-                                            <Text style={styles.textDetailsPlant}>
-                                                <Text style={{ fontWeight: 'bold' }}>Comestível:</Text>
-                                                {"\n"}{plantList.edible_parts}usdf0ifporeit-0
-                                            </Text>
+                                    <View style={styles.viewDetails}>
+                                        <View style={styles.viewDescricao}>
+                                            <Text numberOfLines={7} style={styles.textDetailsPlant}>
+                                                <Text style={{ fontWeight: 'bold' }}>Nome comum:</Text> {plantList.common_names}okotre
+                                                <Text style={{ fontWeight: 'bold' }}>{"\n"}Descrição:</Text> {plantList.description}Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.</Text>
                                         </View>
-                                        <View style={styles.viewDescricao2}>
-                                            <Icon name="seed" size={40} color="#7a4526" style={{ paddingRight: 10 }} />
-                                            <Text style={styles.textDetailsPlant}>
-                                                <Text style={{ fontWeight: 'bold' }}>Cultivo:</Text>
-                                                {"\n"}{plantList.propagation_methods}gpyrtyort-
-                                            </Text>
-                                        </View>
-                                        <View style={styles.viewDescricao2}>
-                                            <Icon name="water-check" size={40} color="#51a9e0" style={{ paddingRight: 10 }} />
-                                            <Text style={styles.textDetailsPlant}>
-                                                <Text style={{ fontWeight: 'bold' }}>Rega:</Text>
-                                                {"\n"}{plantList.watering}kgkfhpfgt
-                                            </Text>
-                                        </View>
-                                        <View style={styles.viewDescricao2}>
-                                            <Icon name="white-balance-sunny" size={40} color="#f5f125" style={{ paddingRight: 10 }} />
-                                            <Text style={styles.textDetailsPlant}>
-                                                <Text style={{ fontWeight: 'bold' }}>Iluminação:</Text>
-                                                {"\n"}{plantList.Iluminacao}kghokfh-f
-                                            </Text>
+                                        <View style={[styles.viewDetails2, { flexWrap: 'wrap', flexDirection: 'row' }]}>
+                                            <View style={styles.viewDescricao2}>
+                                                <Icon name="sprout" size={35} color="green" style={{ paddingRight: 15 }} />
+                                                <Text style={styles.textDetailsPlant}>
+                                                    <Text style={{ fontWeight: 'bold' }}>Comestível:</Text>
+                                                    {"\n"}{plantList.edible_parts}usdf0ifporeit-0
+                                                </Text>
+                                            </View>
+                                            <View style={styles.viewDescricao2}>
+                                                <Icon name="seed" size={40} color="#7a4526" style={{ paddingRight: 10 }} />
+                                                <Text style={styles.textDetailsPlant}>
+                                                    <Text style={{ fontWeight: 'bold' }}>Cultivo:</Text>
+                                                    {"\n"}{plantList.propagation_methods}gpyrtyort-
+                                                </Text>
+                                            </View>
+                                            <View style={styles.viewDescricao2}>
+                                                <Icon name="water-check" size={40} color="#51a9e0" style={{ paddingRight: 10 }} />
+                                                <Text style={styles.textDetailsPlant}>
+                                                    <Text style={{ fontWeight: 'bold' }}>Rega:</Text>
+                                                    {"\n"}{plantList.watering}kgkfhpfgt
+                                                </Text>
+                                            </View>
+                                            <View style={styles.viewDescricao2}>
+                                                <Icon name="white-balance-sunny" size={40} color="#f5f125" style={{ paddingRight: 10 }} />
+                                                <Text style={styles.textDetailsPlant}>
+                                                    <Text style={{ fontWeight: 'bold' }}>Iluminação:</Text>
+                                                    {"\n"}{plantList.Iluminacao}kghokfh-f
+                                                </Text>
+                                            </View>
                                         </View>
                                     </View>
                                 </View>
                                 <View style={[styles.modalCard, { flexWrap: 'wrap', flexDirection: 'row' }]}>
                                     <View style={styles.viewButtons}>
                                         <TouchableOpacity style={styles.buttons} onPress={() => { setModalCuidados(false); setModalLembrete(true); }}>
-                                            <Text style={{ fontWeight: 'bold', fontSize: 20, textAlign: 'center', paddingLeft: 10, paddingRight: 10, color: 'white' }}>Adicionar{"\n"}lembrete</Text>
+                                            {/* <Text style={{ fontWeight: 'bold', fontSize: 20, textAlign: 'center', paddingLeft: 10, paddingRight: 10, color: 'white' }}>Adicionar{"\n"}lembrete</Text> */}
+                                            <Icon name="bell-plus" size={55} color="#f6fff5" />
                                         </TouchableOpacity>
                                     </View>
                                     <View style={styles.viewButtons}>
                                         <TouchableOpacity style={styles.buttons} onPress={() => { setModalCuidados(false); setModalHistorico(true); }}>
-                                            <Text style={{ fontWeight: 'bold', fontSize: 20, textAlign: 'center', paddingLeft: 10, paddingRight: 10, color: 'white' }}>Histórico de{"\n"}cuidados</Text>
+                                            {/* <Text style={{ fontWeight: 'bold', fontSize: 20, textAlign: 'center', paddingLeft: 10, paddingRight: 10, color: 'white' }}>Histórico de{"\n"}cuidados</Text> */}
+                                            <Icon name="clipboard-text-clock-outline" size={55} color="#f6fff5" />
                                         </TouchableOpacity>
                                     </View>
                                 </View>
@@ -198,25 +202,28 @@ const styles = StyleSheet.create({
     },
     modalContainer: {
         backgroundColor: '#f6fff5', //#faf2ed
-        padding: 10,
         flex: 1,
     },
     modalImage: {
         width: "90%",
         height: 190,
         borderRadius: 20,
-        marginBottom: 15,
+        marginBottom: 10,
         marginTop: 10,
     },
     buttons: {
         alignItems: 'center',
+        justifyContent: "center",
         padding: 10,
-        backgroundColor: "#587f56",
-        borderRadius: 25,
-        marginTop: 20,
+        borderRadius: 20,
+        borderWidth: 3,
+        backgroundColor: '#587f56',
+        borderColor: "#587f56",
+        marginTop: 10,
         shadowColor: 'black',
-        elevation: 8,
-        width: 170,
+        elevation: 10,
+        marginBottom: 10,
+        marginLeft: 10,
     },
     viewDetails: {
         justifyContent: "center",
@@ -255,7 +262,7 @@ const styles = StyleSheet.create({
     viewDescricao2: {
         backgroundColor: 'white',
         marginTop: 5,
-        marginBottom: 10,
+        marginBottom: 5,
         marginHorizontal: 5,
         borderRadius: 20,
         padding: 10,
@@ -264,14 +271,13 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         width: "47%",
         height: "50%",
-        borderWidth: 3,
+        borderWidth: 4,
         borderColor: "#b5d4b4",
     },
     viewDetails2: {
         justifyContent: "space-between",
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 20,
     },
     viewButtons: {
         marginTop: 5,
@@ -282,19 +288,21 @@ const styles = StyleSheet.create({
     },
     iconVoltar: {
         fontSize: 30,
-        color: '#2a3b29',
+        color: 'rgba(255,255,255,1)',
+        marginLeft: 15,
     },
     modalTitle: {
-        fontSize: 25,
-        marginLeft: 10,
-        color: '#2a3b29',
+        fontSize: 22,
+        marginLeft: 20,
+        color: 'rgba(255,255,255,1)',
         fontWeight: "bold",
         textAlign: "center"
     },
     modalHeader: {
+        backgroundColor: "#3a4d39",
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "flex-start",
-
+        height: 50,
     },
 })

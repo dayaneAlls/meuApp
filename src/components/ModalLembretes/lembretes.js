@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
 import api from "../../services/api";
 import to from "await-to-js";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Notifications from 'expo-notifications';
 import { format, addDays, startOfWeek } from 'date-fns';
 import { pt } from 'date-fns/locale';
+import { Picker } from '@react-native-picker/picker';
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
-import { View, Text, StyleSheet, FlatList, SafeAreaView, TouchableOpacity, Modal, ScrollView, TextInput, Switch } from 'react-native';
+import { View, Text, StyleSheet, FlatList, SafeAreaView, TouchableOpacity, Modal, ScrollView, TextInput, Switch, SectionList } from 'react-native';
 
 export default function ModalLembretes({ setVisible }) {
 
@@ -38,8 +40,23 @@ export default function ModalLembretes({ setVisible }) {
         })();
     }, []);
 
-    const agendarNotificacao = async () => {
+    const [notificacoes, setNotificacoes] = useState([]);
 
+    // Recupera as notificações agendadas ao montar o componente
+    useEffect(() => {
+        const carregarNotificacoes = async () => {
+            try {
+                const armazenadas = await AsyncStorage.getItem('notificacoes');
+                const notificacoes = armazenadas ? JSON.parse(armazenadas) : [];
+                setNotificacoes(notificacoes);
+            } catch (error) {
+                console.error("Erro ao carregar notificações:", error);
+            }
+        };
+        carregarNotificacoes();
+    }, []);
+
+    const agendarNotificacao = async () => {
         const trigger = {
             hour: parseInt(horaSelecionada),
             minute: parseInt(minutoSelecionado),
@@ -47,19 +64,41 @@ export default function ModalLembretes({ setVisible }) {
             ...(frequencia === 'Semanalmente' && { weekday: getWeekday(diaSelecionado) }),
         };
 
-        console.log("Dia selecionado:", diaSelecionado);
-        console.log("Dia da semana (weekday):", getWeekday(diaSelecionado));
-        console.log("Trigger object:", trigger);
-
         try {
-            await Notifications.scheduleNotificationAsync({
+            const notificationId = await Notifications.scheduleNotificationAsync({
                 content: {
                     title: 'Hora de cuidar da sua planta! 🌿😊',
                     body: textoLembrete,
                 },
                 trigger,
             });
-            console.log('Notificação agendada com sucesso!');
+            const novaNotificacao = {
+                id: notificationId,
+                hora: horaSelecionada,
+                minuto: minutoSelecionado,
+                frequencia,
+                dia: diaSelecionado,
+                texto: textoLembrete,
+                ativa: true,
+            };
+
+            // Recupera as notificações atuais
+            const armazenadas = await AsyncStorage.getItem('notificacoes');
+            const notificacoes = armazenadas ? JSON.parse(armazenadas) : [];
+
+            // Adiciona a nova notificação à lista
+            notificacoes.push(novaNotificacao);
+
+            // Salva a lista atualizada
+            await AsyncStorage.setItem('notificacoes', JSON.stringify(notificacoes));
+
+            // Confirmação do conteúdo salvo
+            const confirmacao = await AsyncStorage.getItem('notificacoes');
+            console.log("Notificações salvas:", JSON.parse(confirmacao));
+
+            setNotificacoes(notificacoes);
+            setModalAdicionar(false);
+
         } catch (error) {
             console.error("Erro ao agendar notificação:", error);
         }
@@ -96,6 +135,32 @@ export default function ModalLembretes({ setVisible }) {
         };
     });
 
+    // Função para excluir uma notificação agendada
+    const excluirNotificacao = async (id) => {
+        try {
+            await Notifications.cancelScheduledNotificationAsync(id);
+            setNotificacoes(prev => prev.filter(notificacao => notificacao.id !== id));
+        } catch (error) {
+            console.log('Erro ao cancelar notificação:', error);
+        }
+    };
+
+    // Função para ativar/desativar notificações
+    const toggleAtiva = async (id, ativa) => {
+        const notificacaoAtualizada = notificacoes.map(notificacao =>
+            notificacao.id === id ? { ...notificacao, ativa: !ativa } : notificacao
+        );
+
+        setNotificacoes(notificacaoAtualizada);
+        await AsyncStorage.setItem('notificacoes', JSON.stringify(notificacaoAtualizada));
+
+        if (ativa) {
+            Notifications.cancelScheduledNotificationAsync(id);
+        } else {
+            const notificacao = notificacoes.find(n => n.id === id);
+            Notifications.scheduleNotificationAsync(notificacao.id);
+        }
+    };
     const renderItem = ({ item }) => (
         <TouchableOpacity
             style={styles.botaoDia}
@@ -105,32 +170,61 @@ export default function ModalLembretes({ setVisible }) {
         </TouchableOpacity>
     );
 
+    const renderItem2 = ({ item }) => (
+        <View style={styles.itemContainer}>
+            <Text style={{ width: "75%" }}>
+                <Text style={{ fontWeight: 'bold', fontSize: 22, color: "#3a6138" }}>{`${item.texto}`}</Text>
+                <Text style={{ fontWeight: 'bold', fontStyle: 'italic', fontSize: 18, color: "#648c62" }}>{"\n"}{`${item.frequencia} às ${item.hora}:${item.minuto}`} </Text>
+            </Text>
+            <Switch
+                value={item.ativa}
+                onValueChange={() => toggleAtiva(item.id, item.ativa)}
+            />
+            <TouchableOpacity onPress={() => excluirNotificacao(item.id)}>
+                <Icon name="close-circle" style={{ color: "#db453d", fontSize: 35 }} />
+            </TouchableOpacity>
+        </View>
+    );
+
     return (
         <View style={styles.modalContainer}>
-            <TouchableOpacity onPress={() => setVisible(false)}>
-                <Icon name="arrow-left" style={styles.iconVoltar} />
-            </TouchableOpacity>
-            <View>
-                <Text style={styles.modalTitle}>Adicione lembretes de cuidados para essa planta</Text>
+            <View style={styles.modalHeader}>
+                <TouchableOpacity onPress={() => setVisible(false)}>
+                    <Icon name="arrow-left" style={styles.iconVoltar} />
+                </TouchableOpacity>
+                <Text style={styles.modalTitle}>Adicionar lembrete </Text>
+            </View>
+            <View style={{ padding: 15 }}>
                 <Text style={{ fontSize: 20, fontStyle: "italic", color: "#587f56", margin: 5, marginTop: 15 }}>
                     <Text style={{ fontWeight: 'bold', fontSize: 30, }}>Hoje:</Text>
                     {"\n"}{dataAtual}
                 </Text>
-                <Text style={{ fontSize: 18, fontWeight: "bold", color: "#587f56", margin: 5, marginTop: 10 }}>Selecione um dia da semana e clique em adicionar:</Text>
-                <View style={{ flexDirection: "row" }}>
-                    <FlatList
-                        horizontal={true}
-                        showsHorizontalIndicator={true}
-                        data={diasComDatas}
-                        keyExtractor={(item) => item.id}
-                        renderItem={renderItem}
-                        contentContainerStyle={styles.listaDias}
-                    />
-                    <View >
-                        < TouchableOpacity style={styles.buttonAddLembrete} onPress={() => setModalAdicionar(true)}>
-                            <Icon name="plus" style={{ fontSize: 50, color: "#2a3b29" }} />
-                        </TouchableOpacity>
+                <View style={styles.ViewCalendar}>
+                    <Text style={styles.textoSelecionar}>Selecione um dia da semana e clique em adicionar:</Text>
+                    <View style={{ flexDirection: "row", padding: 10 }}>
+                        <FlatList
+                            horizontal={true}
+                            showsHorizontalIndicator={true}
+                            data={diasComDatas}
+                            keyExtractor={(item) => item.id}
+                            renderItem={renderItem}
+                            contentContainerStyle={styles.listaDias}
+                        />
+                        <View style={{ borderLeftWidth: 2, borderColor: "#a3d1a1" }}>
+                            < TouchableOpacity style={styles.buttonAddLembrete} onPress={() => setModalAdicionar(true)}>
+                                <Icon name="plus" style={{ fontSize: 50, color: "#2a3b29" }} />
+                            </TouchableOpacity>
+                        </View>
                     </View>
+                </View>
+                <View style={styles.flatlist2}>
+                    <FlatList
+                        data={notificacoes}
+                        keyExtractor={(item) => item.id.toString()}
+                        renderItem={renderItem2}
+                        contentContainerStyle={styles.flatListContainer}
+                        ListEmptyComponent={<Text style={{ textAlign: 'center', marginTop: 20 }}>Nenhuma notificação agendada</Text>}
+                    />
                 </View>
             </View>
             <Modal
@@ -150,6 +244,7 @@ export default function ModalLembretes({ setVisible }) {
                                 placeholderTextColor="#8eb08d"
                                 style={styles.textInput}
                                 value={textoLembrete}
+                                maxLength={30}
                                 onChangeText={(text) => setTextoLembrete(text)}></TextInput>
                             <View style={styles.scrollContainer}>
                                 <ScrollView
@@ -224,31 +319,39 @@ export default function ModalLembretes({ setVisible }) {
 const styles = StyleSheet.create({
 
     modalContainer: {
-        backgroundColor: '#f6fff5', //#faf2ed
-        padding: 20,
+        backgroundColor: '#dfe8df', //#faf2ed
         flex: 1,
     },
     iconVoltar: {
         fontSize: 30,
-        color: '#2a3b29',
+        color: 'rgba(255,255,255,1)',
+        marginLeft: 15,
     },
     modalTitle: {
-        fontSize: 25,
-        marginLeft: 10,
-        color: '#2a3b29',
+        fontSize: 22,
+        paddingHorizontal: 20,
+        color: 'rgba(255,255,255,1)',
         fontWeight: "bold",
         textAlign: "center"
     },
+    modalHeader: {
+        backgroundColor: "#3a4d39",
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "flex-start",
+        height: 60,
+    },
     buttonAddLembrete: {
         alignItems: 'center',
+        justifyContent: "center",
         padding: 5,
-        backgroundColor: "#b5d4b4",
+        backgroundColor: "#a3d1a1",
         borderRadius: 30,
-        marginTop: 20,
+        marginTop: 10,
         shadowColor: 'black',
         elevation: 10,
         marginBottom: 10,
-        marginLeft: 20,
+        marginLeft: 10,
     },
     listaDias: {
         flexDirection: "row",
@@ -257,14 +360,14 @@ const styles = StyleSheet.create({
     },
     botaoDia: {
         padding: 10,
-        backgroundColor: '#b5d4b4',
+        backgroundColor: '#cdebcc',
         borderRadius: 10,
         alignItems: 'center',
         margin: 5,
         elevation: 10,
         width: 75,
         borderWidth: 1,
-        borderColor: '#6f8c6d',
+        borderColor: '#a3d1a1',
     },
     textoBotao: {
         fontSize: 20,
@@ -277,7 +380,7 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(34, 34, 34, 0.4)',
     },
     modalCalendarContent: {
-        backgroundColor: '#f6fff5',
+        backgroundColor: '#c3d6cc',
         justifyContent: "center",
         flex: 3,
     },
@@ -298,7 +401,7 @@ const styles = StyleSheet.create({
         marginHorizontal: 50,
     },
     modalCalendar: {
-        backgroundColor: "#d4edd1",
+        backgroundColor: "#f6fff5",
         borderRadius: 20,
         marginHorizontal: 35,
     },
@@ -354,7 +457,7 @@ const styles = StyleSheet.create({
     scroll: {
         height: 80,  // Altura fixa para cada ScrollView
         marginHorizontal: 10,
-        backgroundColor: "#b5d4b4",
+        backgroundColor: "#dfede2",
         borderRadius: 10,
     },
     scrollContent: {
@@ -384,6 +487,48 @@ const styles = StyleSheet.create({
         height: 45,
         marginHorizontal: 15,
         marginBottom: 20,
-
     },
+    flatListContainer: {
+        padding: 10,
+    },
+    itemContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: 13,
+        backgroundColor: '#aed1be',
+        marginBottom: 15,
+        paddingLeft: 15,
+        borderRadius: 15,
+    },
+    textoSelecionar: {
+        fontSize: 18,
+        fontWeight: "bold",
+        color: "#587f56",
+        paddingTop: 5,
+        paddingHorizontal: 15,
+        borderBottomWidth: 2,
+        borderColor: "#a3d1a1",
+        backgroundColor: "#ddeddd",
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
+    },
+    flatlist2: {
+        borderTopWidth: 3.5,
+        borderBottomWidth: 3.5,
+        borderColor: "#a3d1a1",
+        marginHorizontal: 10,
+        marginTop: 10,
+        marginBottom: 10,
+        height: "58%",
+        backgroundColor: "#f5faf5",
+    },
+    ViewCalendar: {
+        borderColor: "#a3d1a1",
+        borderWidth: 2,
+        margin: 10,
+        borderRadius: 20,
+        backgroundColor: "#f5faf5",
+    }
+
 })
