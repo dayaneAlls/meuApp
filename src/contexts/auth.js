@@ -9,6 +9,7 @@ export const AuthContext = createContext({});
 
 function AuthProvider({ children }) {
     const [user, setUser] = useState(null);
+    const [userToken, setUserToken] = useState(null);
     const [userName, setUserName] = useState(null);
     const [codigo, setCodigo] = useState(null);
     const [loading, setLoading] = useState(false);
@@ -87,6 +88,7 @@ function AuthProvider({ children }) {
             ))
 
             const userToken = response.data.userToken;
+            setUserToken(userToken);
             const userInfo = jwtDecode(userToken);
             const userName = userInfo.name;
             console.log(userToken);
@@ -149,9 +151,20 @@ function AuthProvider({ children }) {
         navigation.goBack();
     }
 
-    async function addNewPlant(plantToken,) {
-        const [error, response] = await to(api.post(`auth/plant/add?plantName=${search}`));
-
+    async function addNewPlant(plantToken) {
+        console.log(user);
+        
+        console.log({a: `auth/plant/add?plant_access_token=${plantToken}`}, {
+        headers: { 
+          '': '', 
+          'Authorization': `Bearer ${userToken}`
+        }});
+        const [error, response] = await to(api.post(`auth/plant/add?plant_access_token=${plantToken}`, {
+            headers: { 
+              '': '', 
+              'Authorization': `Bearer ${userToken}`
+            } }));
+            
         if (error) {
             console.error('Erro ao enviar planta:', error);
             return;

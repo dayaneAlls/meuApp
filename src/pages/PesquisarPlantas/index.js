@@ -1,9 +1,10 @@
 
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import api from "../../services/api";
 import to from "await-to-js";
 import Header from '../../components/Header'
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
+import { AuthContext } from "../../contexts/auth";
 import { useNavigation } from "@react-navigation/native";
 import {
     View,
@@ -25,6 +26,7 @@ export default function PesquisarPlantas() {
     const [listaDePlantas, setListaDePlantas] = useState([]);
     const [modalPlant, setModalPlant] = useState(false);
     const [selectedPlant, setSelectedPlant] = useState(null);
+    const { addNewPlant } = useContext(AuthContext);
     const [selectedPlantToken, setSelectedPlantToken] = useState(null);
     const [plantInfo, setPlantInfo] = useState(null);
     const navigation = useNavigation();
@@ -42,7 +44,7 @@ export default function PesquisarPlantas() {
     }
 
     async function fetchPlantInfo(plant_access_token) {
-        console.log({ plant_access_token });
+        // console.log({ plant_access_token });
         const [error, response] = await to(api.get(`unauth/plant/info?plant_access_token=${plant_access_token}`));
 
         if (error) {
@@ -53,14 +55,17 @@ export default function PesquisarPlantas() {
 
     }
 
-    /*function handleAdd() {
+    function handleAdd() {
+        
         if (planta === "") {
-            alert("Nenhuma planta pesquisada");
-            return;
+            // alert("Nenhuma planta pesquisada");
+            // return;
         }
+        console.log(selectedPlant.access_token);
+        
         addNewPlant(selectedPlant.access_token,);
        
-    }*/
+    }
 
     // Calcular a largura disponível para cada card
     const windowWidth = Dimensions.get('window').width;
@@ -147,7 +152,7 @@ export default function PesquisarPlantas() {
                                     </View>
                                 </ScrollView>
                                 <View style={{ justifyContent: "flex-start", alignItems: "center", marginTop: 10, }}>
-                                    <TouchableOpacity style={styles.closeButton} onPress={() => { navigation.navigate("Minhas Plantas", { newPlant: selectedPlant }); setModalPlant(false); }}>
+                                    <TouchableOpacity style={styles.closeButton} onPress={() => { handleAdd(); setModalPlant(false); }}>
                                         <Text style={styles.textAddPlant}>Adicionar em Minhas Plantas</Text>
                                     </TouchableOpacity>
                                 </View>
@@ -159,6 +164,7 @@ export default function PesquisarPlantas() {
         </>
     );
 }//onPress={() => { handleAdd; setModalPlant(false); }}
+//{ navigation.navigate("Minhas Plantas", { newPlant: selectedPlant }); setModalPlant(false); }
 const styles = StyleSheet.create({
     container: {
         flex: 1,

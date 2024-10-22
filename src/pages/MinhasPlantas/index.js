@@ -1,23 +1,45 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import api from "../../services/api";
 import to from "await-to-js";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
-import { View, Text, StyleSheet, FlatList, SafeAreaView, Image, TouchableOpacity, Modal, ScrollView, Dimensions, ImageBackground } from 'react-native';
+import { View, Text, StyleSheet, FlatList, SafeAreaView, Image, TouchableOpacity, Modal, ScrollView, Dimensions, ImageBackground, Button } from 'react-native';
 import Header from '../../components/Header'
 import ModalLembretes from "../../components/ModalLembretes/lembretes";
+import { AuthContext } from "../../contexts/auth";
 
-export default function MinhasPlantas({ route }) {
+export default function MinhasPlantas() {
 
     const [plantList, setPlantList] = useState([]);
+    const userToken = useContext(AuthContext);
     const [modalCuidados, setModalCuidados] = useState(false);
-    const [modalLembrete, setModalLembrete] = useState(true);
+    const [modalLembrete, setModalLembrete] = useState(false);
     const [modalHistorico, setModalHistorico] = useState(false);
 
-    useEffect(() => {
+    /*useEffect(() => {
         if (route.params?.newPlant) {
             setPlantList([...plantList, route.params.newPlant]); // Adiciona a nova planta à lista
         }
-    }, [route.params?.newPlant]);
+    }, [route.params?.newPlant]);*/
+
+    async function handleList() {
+        // console.log({ search });
+        console.log(userToken);
+        
+        const [error, response] = await to(api.get(`auth/plant/list`, {
+            headers: { 
+              '': '', 
+              'Authorization': `Bearer ${userToken}`
+            } }));
+
+        if (error) {
+            console.error('Erro ao buscar plantas:', error);
+            return;
+        }
+        console.log(response);
+        
+        // setPlantList(response.data.plants);
+        // setPlanta("");
+    }
 
     const handleDelete = (index) => {
         const updatedList = plantList.filter((_, i) => i !== index);
@@ -27,8 +49,8 @@ export default function MinhasPlantas({ route }) {
     const renderItem = ({ item, index }) => (
         <View style={styles.card}>
             <TouchableOpacity style={styles.cardNoticia} onPress={() => setModalCuidados(true)}>
-                <Image source={{ uri: `data:image/jpeg;base64,${item.thumbnail}` }} style={styles.cardImage} />
-                <Text style={styles.cardText}>{item.entity_name}</Text>
+                {/* <Image source={{ uri: `data:image/jpeg;base64,${item.thumbnail}` }} style={styles.cardImage} /> */}
+                {/* <Text style={styles.cardText}>{item.entity_name}</Text> */}
                 <TouchableOpacity
                     onPress={() => handleDelete(index)} // Chama a função handleDelete passando o index do item
                 >
@@ -49,6 +71,7 @@ export default function MinhasPlantas({ route }) {
                     imageStyle={{ opacity: 0.5 }}
                 >
                     <View style={styles.container}>
+                        <Button onClick={handleList()}></Button>
                         <FlatList
                             data={plantList}
                             keyExtractor={(item, index) => index}
