@@ -11,6 +11,7 @@ function AuthProvider({ children }) {
     const [user, setUser] = useState(null);
     const [userToken, setUserToken] = useState(null);
     const [userName, setUserName] = useState(null);
+    const [userEmail, setUserEmail] = useState(null);
     const [codigo, setCodigo] = useState(null);
     const [loading, setLoading] = useState(false);
 
@@ -23,16 +24,28 @@ function AuthProvider({ children }) {
                 const storageUserToken = await AsyncStorage.getItem("@userToken");
 
                 if (storageUserToken) {
-                    const userInfo = jwtDecode(storageUserToken); // Decodifica o token JWT
-                    const userName = userInfo.name;
-                    setUser(userInfo); // Define o usuário com as informações decodificadas
-                    setUserName(userName);
+                    const userInfo = jwtDecode(storageUserToken);
+
+                    // Verifica se o token é válido (não expirado)
+                    if (Date.now() >= storageUserToken.exp * 1000) {
+                        console.log("Token expirado");
+                        await AsyncStorage.removeItem("@userToken");
+                        setUser(null);
+                        setUserToken(null);
+                    } else {
+                        setUserToken(storageUserToken);
+                        setUser(userInfo);
+                        setUserName(userInfo.name);
+                        setUserEmail(userInfo.email);
+                    }
                 } else {
                     setUser(null);
+                    setUserToken(null);
                 }
             } catch (error) {
-                console.log("Erro ao carregar usuário do AsyncStorage", error);
+                console.log("Erro ao carregar usuário do AsyncStorage:", error);
                 setUser(null);
+                setUserToken(null);
             } finally {
                 setLoading(false);
             }
@@ -70,6 +83,7 @@ function AuthProvider({ children }) {
         try {
             await AsyncStorage.removeItem("@userToken"); // Remove apenas o token do usuário
             setUser(null);
+            setUserToken(null);
         } catch (error) {
             console.log("Erro ao remover token do AsyncStorage", error);
         }
@@ -85,24 +99,28 @@ function AuthProvider({ children }) {
                     email,
                     password
                 }
-            ))
+            ));
 
             const userToken = response.data.userToken;
             setUserToken(userToken);
             const userInfo = jwtDecode(userToken);
             const userName = userInfo.name;
-            console.log(userToken);
+            const userEmail = userInfo.email;
 
+            // Salva o token no AsyncStorage
             await AsyncStorage.setItem("@userToken", userToken);
+
+            // Define o token no cabeçalho padrão da API
             api.defaults.headers["Authorization"] = `Bearer ${userToken}`;
 
-            setUser(userInfo); // Atualiza o usuário
+            // Atualiza o estado do usuário e o token
+            setUser(userInfo);
             setUserName(userName);
-            console.log(userName);
-            setLoading(false);
+            setUserEmail(userEmail);
 
         } catch (err) {
-            console.log("Erro ao logar", err);
+            console.log("Erro ao logar:", err);
+        } finally {
             setLoading(false);
         }
     }
@@ -152,27 +170,66 @@ function AuthProvider({ children }) {
     }
 
     async function addNewPlant(plantToken) {
-        console.log(user);
-        
-        console.log({a: `auth/plant/add?plant_access_token=${plantToken}`}, {
-        headers: { 
-          '': '', 
-          'Authorization': `Bearer ${userToken}`
-        }});
-        const [error, response] = await to(api.post(`auth/plant/add?plant_access_token=${plantToken}`, {
-            headers: { 
-              '': '', 
-              'Authorization': `Bearer ${userToken}`
-            } }));
-            
-        if (error) {
-            console.error('Erro ao enviar planta:', error);
+        setLoading(true);
+
+        // Recupera o token mais atualizado do AsyncStorage
+        const token = await AsyncStorage.getItem("@userToken");
+        if (!token) {
+            console.error("Token não encontrado. Usuário não autenticado.");
+            setLoading(false);
             return;
         }
+        const [error, response] = await to(api.post(`auth/plant/add?plant_access_token=${plantToken}`, {}, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        }));
+
+        if (error) {
+            console.error('Erro ao enviar planta:', error);
+            setLoading(false);
+            return;
+        }
+        setLoading(false);
     }
 
+    async function listPlants() {
+        const [error, response] = await to(api.get(`auth/plant/list`, {
+            headers: {
+                'Authorization': `Bearer ${userToken}`
+            }
+        }));
+        if (error) {
+            console.error('Erro ao buscar plantas:', error);
+            return;
+        }
+        return response;
+    }
+    async function listActivities() {
+        const [error, response] = await to(api.get(`unauth/plant/activity/list`));
+        if (error) {
+            console.error('Erro ao buscar atividades:', error);
+            setLoading(false);
+            return;
+        }
+        return response;
+    }
+
+    // async function addLembrete(plantId) {
+    //     const [error, response] = await to(api.post(`auth/plant/list`, {
+    //         headers: {
+    //             'Authorization': `Bearer ${userToken}`
+    //         }
+    //     }));
+    //     if (error) {
+    //         console.error('Erro ao adicionar lembrete:', error);
+    //         setLoading(false);
+    //         return;
+    //     }
+    // }
+
     return (
-        <AuthContext.Provider value={{ signed: !!user, userName, signUp, signOut, signIn, recuperarSenha, cadastrar, codeSubmit, addNewPlant, loading }}>
+        <AuthContext.Provider value={{ signed: !!user, userName, userEmail, signUp, signOut, signIn, recuperarSenha, cadastrar, codeSubmit, addNewPlant, listPlants, listActivities, loading }}>
             {children}
         </AuthContext.Provider>
     )

@@ -5,7 +5,7 @@ import to from "await-to-js";
 import Header from '../../components/Header'
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { AuthContext } from "../../contexts/auth";
-import { useNavigation } from "@react-navigation/native";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import {
     View,
     Text,
@@ -27,9 +27,7 @@ export default function PesquisarPlantas() {
     const [modalPlant, setModalPlant] = useState(false);
     const [selectedPlant, setSelectedPlant] = useState(null);
     const { addNewPlant } = useContext(AuthContext);
-    const [selectedPlantToken, setSelectedPlantToken] = useState(null);
     const [plantInfo, setPlantInfo] = useState(null);
-    const navigation = useNavigation();
 
     async function pesquisarPlantas(search) {
         console.log({ search });
@@ -52,24 +50,16 @@ export default function PesquisarPlantas() {
             return;
         }
         setPlantInfo(response.data.plants);
-
     }
 
     function handleAdd() {
-        
-        if (planta === "") {
-            // alert("Nenhuma planta pesquisada");
-            // return;
-        }
-        console.log(selectedPlant.access_token);
-        
         addNewPlant(selectedPlant.access_token,);
-       
     }
 
     // Calcular a largura disponível para cada card
     const windowWidth = Dimensions.get('window').width;
     const cardWidth = windowWidth / 2 - 20; // Subtrai a margem/padding conforme necessário
+    const scrollWidth = windowWidth / 1 - 40;
 
     const renderItem = ({ item }) => {
         const base64Image = `data:image/jpeg;base64,${item.thumbnail}`;
@@ -104,9 +94,9 @@ export default function PesquisarPlantas() {
                 imageStyle={{ opacity: 0.2 }}
             >
                 <View style={styles.container}>
-                    <View>
+                    <View style={{ marginBottom: 20 }}>
                         <TextInput
-                            placeholder="Pesquisar Plantas"
+                            placeholder="Pesquise uma Planta"
                             style={styles.input}
                             value={planta}
                             onChangeText={(text) => setPlanta(text)}
@@ -117,13 +107,16 @@ export default function PesquisarPlantas() {
                             <MaterialIcons name="search" style={styles.iconPlace} />
                         </TouchableOpacity>
                     </View>
-                    <FlatList
-                        data={listaDePlantas}
-                        renderItem={renderItem}
-                        keyExtractor={(item, index) => index} // chave única para cada item
-                        numColumns={2} // Define o número de colunas
-                        contentContainerStyle={styles.cardsContainer} // Estilo do contêiner de itens 
-                    />
+                    <View style={{ marginBottom: 20, height: "80%", justifyContent: "center" }}>
+                        <FlatList
+                            data={listaDePlantas}
+                            renderItem={renderItem}
+                            keyExtractor={(item, index) => index} // chave única para cada item
+                            numColumns={2} // Define o número de colunas
+                            contentContainerStyle={styles.cardsContainer} // Estilo do contêiner de itens 
+                        />
+                    </View>
+
                     {modalPlant && selectedPlant && plantInfo && (
                         <Modal
                             animationType="slide"
@@ -132,29 +125,86 @@ export default function PesquisarPlantas() {
                             onRequestClose={() => setModalPlant(false)}
                         >
                             <View style={styles.modalContainer}>
-                                <View style={styles.modalCard}>
-                                    <Image
-                                        source={{ uri: `data:image/jpeg;base64,${selectedPlant.thumbnail}` }}
-                                        style={styles.modalImage}
-                                    />
-                                    <Text style={styles.textNamePlant}>{selectedPlant.entity_name}</Text>
-                                </View>
-                                <ScrollView>
-                                    <View style={styles.viewDetails}>
-                                        <Text style={styles.textDetailsPlant}>Nome comum: {plantInfo.common_names}</Text>
-                                        <Text style={styles.textDetailsPlant}>Descrição: {plantInfo.description.value}</Text>
-                                        <Text style={styles.textDetailsPlant}>Partes Comestíveis: {plantInfo.edible_parts}</Text>
-                                        <Text style={styles.textDetailsPlant}>Rega Recomendada: {plantInfo.watering.max}</Text>
-                                        <Text style={styles.textDetailsPlant}>Sinonimos: {plantInfo.synonyms.join(', \n')}</Text>
-                                        <Text style={styles.textDetailsPlant}>Classe: {plantInfo.taxonomy.class}</Text>
-                                        <Text style={styles.textDetailsPlant}>Gênero: {plantInfo.taxonomy.genus}</Text>
-                                        <Text style={styles.textDetailsPlant}>Ordem: {plantInfo.taxonomy.order}</Text>
-                                    </View>
-                                </ScrollView>
-                                <View style={{ justifyContent: "flex-start", alignItems: "center", marginTop: 10, }}>
-                                    <TouchableOpacity style={styles.closeButton} onPress={() => { handleAdd(); setModalPlant(false); }}>
-                                        <Text style={styles.textAddPlant}>Adicionar em Minhas Plantas</Text>
+                                <View style={styles.modalHeader}>
+                                    <TouchableOpacity onPress={() => setModalPlant(false)}>
+                                        <Icon name="arrow-left" style={styles.iconVoltar} />
                                     </TouchableOpacity>
+                                    <Text style={styles.modalTitle}>Informações da planta</Text>
+                                </View>
+                                <View style={{ padding: 20 }}>
+                                    <View style={styles.modalCard}>
+                                        <Image
+                                            source={{ uri: `data:image/jpeg;base64,${selectedPlant.thumbnail}` }}
+                                            style={styles.modalImage}
+                                        />
+                                        <Text style={styles.textNamePlant}>{selectedPlant.entity_name}</Text>
+                                    </View>
+                                    <View style={styles.viewDetails}>
+                                        <ScrollView horizontal={true}>
+                                            <View style={[styles.scrollModal, { width: scrollWidth }]}>
+                                                <Text numberOfLines={7} style={styles.textDetailsPlant}>
+                                                    <Text style={{ fontWeight: 'bold' }}>Nome comum:</Text> {plantInfo.common_names}
+                                                    <Text style={{ fontWeight: 'bold' }}>{"\n"}Descrição:</Text> {plantInfo.description.value.slice(0, 251)}</Text>
+                                                <MaterialIcons name="chevron-right" size={25} color="#3a4d39" style={{ paddingRight: 15 }} />
+                                            </View>
+                                            <View style={[styles.scrollModal, { width: scrollWidth }]}>
+                                                <Text style={styles.textDetailsPlant}>
+                                                    {plantInfo.description.value.slice(251)}
+                                                </Text>
+                                                <MaterialIcons name="chevron-right" size={25} color="#3a4d39" style={{ paddingRight: 5 }} />
+                                            </View>
+                                            <View style={[styles.scrollModal, { width: scrollWidth }]}>
+                                                <Text style={styles.textDetailsPlant}>
+                                                    <Text style={{ fontWeight: 'bold' }}>Sinonimos:</Text> {plantInfo.synonyms.join(',')}
+                                                </Text>
+                                                <MaterialIcons name="chevron-right" size={25} color="#3a4d39" style={{ paddingRight: 5 }} />
+                                            </View>
+                                            <View style={[styles.scrollModal, { width: scrollWidth }]}>
+                                                <Text style={styles.textDetailsPlant}>
+                                                    <Text style={{ fontWeight: 'bold' }}>Classe:</Text> {plantInfo.taxonomy.class}
+                                                    <Text style={{ fontWeight: 'bold' }}>{"\n"}Gênero:</Text> {plantInfo.taxonomy.genus}
+                                                    <Text style={{ fontWeight: 'bold' }}>{"\n"}Ordem:</Text> {plantInfo.taxonomy.order}
+                                                </Text>
+                                                <MaterialIcons name="chevron-right" size={25} color="#3a4d39" style={{ paddingRight: 5 }} />
+                                            </View>
+                                        </ScrollView>
+                                        <View style={[styles.viewDetails2, { flexWrap: 'wrap', flexDirection: 'row' }]}>
+                                            <View style={styles.scrollModal2}>
+                                                <Icon name="sprout" size={35} color="green" style={{ paddingRight: 15 }} />
+                                                <Text style={styles.textDetailsPlant}>
+                                                    <Text style={{ fontWeight: 'bold' }}>Comestível:</Text>
+                                                    {"\n"}{plantInfo.edible_parts}
+                                                </Text>
+                                            </View>
+                                            <View style={styles.scrollModal2}>
+                                                <Icon name="seed" size={40} color="#7a4526" style={{ paddingRight: 10 }} />
+                                                <Text style={styles.textDetailsPlant}>
+                                                    <Text style={{ fontWeight: 'bold' }}>Cultivo:</Text>
+                                                    {"\n"} jhsdhsdhsu
+                                                </Text>
+                                            </View>
+                                            <View style={styles.scrollModal2}>
+                                                <Icon name="water-check" size={40} color="#51a9e0" style={{ paddingRight: 10 }} />
+                                                <Text style={styles.textDetailsPlant}>
+                                                    <Text style={{ fontWeight: 'bold' }}>Rega:</Text>
+                                                    {"\n"}{plantInfo.watering.max}
+                                                </Text>
+                                            </View>
+                                            <View style={styles.scrollModal2}>
+                                                <Icon name="white-balance-sunny" size={40} color="#f5f125" style={{ paddingRight: 10 }} />
+                                                <Text style={styles.textDetailsPlant}>
+                                                    <Text style={{ fontWeight: 'bold' }}>Iluminação:</Text>
+                                                    {"\n"}{plantInfo.Iluminacao}
+                                                </Text>
+                                            </View>
+                                        </View>
+                                    </View>
+                                    <View style={{ justifyContent: "center", alignItems: "center", marginTop: 10 }}>
+                                        <TouchableOpacity onPress={() => { handleAdd(); setModalPlant(false); }}>
+                                            <Icon name="plus-circle" size={70} color="#587f56" />
+                                        </TouchableOpacity>
+                                        <Text style={styles.textAddPlant}>Adicionar Planta</Text>
+                                    </View>
                                 </View>
                             </View>
                         </Modal>
@@ -163,8 +213,8 @@ export default function PesquisarPlantas() {
             </ImageBackground >
         </>
     );
-}//onPress={() => { handleAdd; setModalPlant(false); }}
-//{ navigation.navigate("Minhas Plantas", { newPlant: selectedPlant }); setModalPlant(false); }
+}
+
 const styles = StyleSheet.create({
     container: {
         flex: 1,
@@ -235,54 +285,97 @@ const styles = StyleSheet.create({
         color: "rgba(58, 77, 57,.7)",
     },
     modalContainer: {
-        marginTop: 15,
-        marginBottom: 10,
-        marginHorizontal: 15,
-        backgroundColor: '#f2d8cb', //#edddd5
-        borderColor: "#587f56",
-        borderWidth: 5,
-        borderRadius: 25,
-        padding: 10,
+        backgroundColor: '#f6fff5', //#faf2ed
         flex: 1,
     },
     modalImage: {
-        width: "85%",
-        height: 190,
+        width: "80%",
+        height: 180,
         borderRadius: 10,
         marginBottom: 15,
         marginTop: 10,
     },
-    closeButton: {
-        alignItems: 'center',
-        padding: 5,
-        backgroundColor: "#587f56",
-        borderRadius: 25,
-    },
     viewDetails: {
         justifyContent: "center",
 
-    },
-    textNamePlant: {
-        fontWeight: 'bold',
-        fontSize: 25,
-        textAlign: 'center',
-    },
-    textDetailsPlant: {
-        fontSize: 20,
-        textAlign: 'left',
-        marginTop: 15,
     },
     modalCard: {
         justifyContent: "flex-start",
         alignItems: "center",
     },
     textAddPlant: {
-        fontWeight: 'bold',
-        fontSize: 18,
+        fontSize: 13,
         textAlign: 'center',
         paddingLeft: 10,
         paddingRight: 10,
         paddingBottom: 5,
-        color: 'white'
+        color: 'black',
+        flexWrap: "wrap"
+    },
+    iconVoltar: {
+        fontSize: 30,
+        color: 'rgba(255,255,255,1)',
+        marginLeft: 15,
+    },
+    modalTitle: {
+        fontSize: 22,
+        marginLeft: 20,
+        color: 'rgba(255,255,255,1)',
+        fontWeight: "bold",
+        textAlign: "center"
+    },
+    modalHeader: {
+        backgroundColor: "#3a4d39",
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "flex-start",
+        height: 50,
+    },
+    scrollModal: {
+        backgroundColor: 'white',
+        borderColor: "#587f56",
+        borderWidth: 2,
+        marginTop: 10,
+        marginBottom: 15,
+        marginRight: 10,
+        alignItems: 'flex-start',
+        borderRadius: 20,
+        padding: 20,
+        justifyContent: 'space-between', // Espaça o texto e o ícone
+        alignItems: 'center',
+        flexDirection: 'row',
+    },
+
+    scrollModal2: {
+        backgroundColor: '#c0c9bf',
+        marginTop: 5,
+        marginBottom: 10,
+        marginHorizontal: 5,
+        borderRadius: 20,
+        padding: 10,
+        justifyContent: "center",
+        alignItems: "center",
+        flexDirection: 'row',
+        width: "47%",
+        height: "50%",
+        borderWidth: 0.6,
+        borderColor: "#587f56",
+    },
+    viewDetails2: {
+        justifyContent: "space-between",
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 25,
+    },
+    textDetailsPlant: {
+        fontSize: 18,
+        color: '#3a4d39',
+        fontFamily: 'sans-serif-condensed',
+
+    },
+    textNamePlant: {
+        fontWeight: 'bold',
+        fontSize: 25,
+        textAlign: 'center',
     },
 });

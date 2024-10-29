@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import api from "../../services/api";
 import to from "await-to-js";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -6,8 +6,9 @@ import * as Notifications from 'expo-notifications';
 import { format, addDays, startOfWeek } from 'date-fns';
 import { pt } from 'date-fns/locale';
 import { Picker } from '@react-native-picker/picker';
+import { AuthContext } from "../../contexts/auth";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
-import { View, Text, StyleSheet, FlatList, SafeAreaView, TouchableOpacity, Modal, ScrollView, TextInput, Switch, SectionList } from 'react-native';
+import { View, Text, StyleSheet, FlatList, SafeAreaView, TouchableOpacity, Modal, ScrollView, Switch, } from 'react-native';
 
 export default function ModalLembretes({ setVisible }) {
 
@@ -16,8 +17,10 @@ export default function ModalLembretes({ setVisible }) {
     const [horaSelecionada, setHoraSelecionada] = useState('24');
     const [minutoSelecionado, setMinutoSelecionado] = useState('00');
     const [frequencia, setFrequencia] = useState('');
-    const [textoLembrete, setTextoLembrete] = useState("");
-
+    const { listActivities } = useContext(AuthContext);
+    // const [textoLembrete, setTextoLembrete] = useState("");
+    const [activities, setActivities] = useState([]);
+    const [selectedActivity, setSelectedActivity] = useState('');
 
     const horas = Array.from({ length: 24 }, (_, i) => (i + 0).toString().padStart(2, '0'));
     const minutos = Array.from({ length: 60 }, (_, i) => i.toString().padStart(2, '0'));
@@ -29,6 +32,12 @@ export default function ModalLembretes({ setVisible }) {
             shouldSetBadge: false,
         }),
     });
+
+    async function handleListActivities() {
+        var response = await listActivities();
+        console.log({ b: response.data });
+        setActivities(response.data);
+    }
 
     useEffect(() => {
         (async () => {
@@ -55,6 +64,10 @@ export default function ModalLembretes({ setVisible }) {
         };
         carregarNotificacoes();
     }, []);
+
+    // useEffect(() => {
+    //     handleListActivities(); // Chama a função ao montar o componente
+    // }, []);
 
     const agendarNotificacao = async () => {
         const trigger = {
@@ -155,12 +168,48 @@ export default function ModalLembretes({ setVisible }) {
         await AsyncStorage.setItem('notificacoes', JSON.stringify(notificacaoAtualizada));
 
         if (ativa) {
-            Notifications.cancelScheduledNotificationAsync(id);
+            await Notifications.cancelScheduledNotificationAsync(id);
         } else {
             const notificacao = notificacoes.find(n => n.id === id);
-            Notifications.scheduleNotificationAsync(notificacao.id);
+
+            // Verifique se a notificação foi encontrada antes de tentar agendá-la
+            if (notificacao) {
+                await Notifications.scheduleNotificationAsync({
+                    content: {
+                        title: notificacao.title,
+                        body: notificacao.body,
+                    },
+                    trigger: notificacao.trigger, // Aqui você usa os detalhes de trigger da notificação
+                });
+            }
         }
     };
+
+    const markAsCompleted = async (item) => {
+
+        const updatedNotifications = notificacoes.map(notificacao =>
+            notificacao.id === item.id ? { ...notificacao, isCompleted: true } : notificacao
+        );
+        saveNotifications(updatedNotifications);
+
+        // if (item.isCompleted) {
+        //     return; // Impede múltiplas marcações como concluídas
+        // }
+        //  const updatedNotifications = notificacoes.map(notificacao =>
+        //      notificacao.id === item.id ? { ...notificacao, isCompleted: true } : notificacao
+        //  );
+        //  saveNotifications(updatedNotifications);
+
+        // // Dados que serão enviados ao backend
+        //  const data = {
+        //      id: item.id,
+        //     hora: item.hora,
+        //      data: item.data,
+        //     atividade: item.texto,
+        //      concluido: true,
+        //  };
+    };
+
     const renderItem = ({ item }) => (
         <TouchableOpacity
             style={styles.botaoDia}
@@ -171,18 +220,29 @@ export default function ModalLembretes({ setVisible }) {
     );
 
     const renderItem2 = ({ item }) => (
-        <View style={styles.itemContainer}>
-            <Text style={{ width: "75%" }}>
-                <Text style={{ fontWeight: 'bold', fontSize: 22, color: "#3a6138" }}>{`${item.texto}`}</Text>
-                <Text style={{ fontWeight: 'bold', fontStyle: 'italic', fontSize: 18, color: "#648c62" }}>{"\n"}{`${item.frequencia} às ${item.hora}:${item.minuto}`} </Text>
-            </Text>
-            <Switch
-                value={item.ativa}
-                onValueChange={() => toggleAtiva(item.id, item.ativa)}
-            />
-            <TouchableOpacity onPress={() => excluirNotificacao(item.id)}>
-                <Icon name="close-circle" style={{ color: "#db453d", fontSize: 35 }} />
-            </TouchableOpacity>
+        <View style={{ flexDirection: "row", }}>
+            <View style={styles.itemContainer}>
+                <Text style={{ width: "60%" }}>
+                    <Text style={{ fontWeight: 'bold', fontSize: 22, color: "#3a6138" }}>{`${item.texto}`}</Text>
+                    <Text style={{ fontWeight: 'bold', fontStyle: 'italic', fontSize: 18, color: "#648c62" }}>{"\n"}{`${item.frequencia} às ${item.hora}:${item.minuto}`} </Text>
+                </Text>
+                <Switch
+                    value={item.ativa}
+                    onValueChange={() => toggleAtiva(item.id, item.ativa)}
+                />
+                <TouchableOpacity onPress={() => excluirNotificacao(item.id)}>
+                    <Icon name="close-circle" style={{ color: "#db453d", fontSize: 35 }} />
+                </TouchableOpacity>
+            </View>
+            <View style={styles.containerCheck}>
+                <TouchableOpacity onPress={() => markAsCompleted(item)}>
+                    {item.isCompleted ? (
+                        <Icon name="checkbox-marked" style={{ color: "#81b0ff", fontSize: 40 }} />
+                    ) : (
+                        <Icon name="checkbox-blank-outline" style={{ color: "#767577", fontSize: 40 }} />
+                    )}
+                </TouchableOpacity>
+            </View>
         </View>
     );
 
@@ -192,7 +252,7 @@ export default function ModalLembretes({ setVisible }) {
                 <TouchableOpacity onPress={() => setVisible(false)}>
                     <Icon name="arrow-left" style={styles.iconVoltar} />
                 </TouchableOpacity>
-                <Text style={styles.modalTitle}>Adicionar lembrete </Text>
+                <Text style={styles.modalTitle}>Lembretes </Text>
             </View>
             <View style={{ padding: 15 }}>
                 <Text style={{ fontSize: 20, fontStyle: "italic", color: "#587f56", margin: 5, marginTop: 15 }}>
@@ -218,6 +278,10 @@ export default function ModalLembretes({ setVisible }) {
                     </View>
                 </View>
                 <View style={styles.flatlist2}>
+                    <View style={{ flexDirection: "row", justifyContent: "space-between", marginHorizontal: 15 }}>
+                        <Text style={{ fontSize: 15, color: "#587f56" }}>Notificações agendadas: </Text>
+                        <Text style={{ fontSize: 15, color: "#587f56" }}>Feito?</Text>
+                    </View>
                     <FlatList
                         data={notificacoes}
                         keyExtractor={(item) => item.id.toString()}
@@ -239,13 +303,19 @@ export default function ModalLembretes({ setVisible }) {
                         <View style={styles.modalCalendar}>
                             <Text style={styles.modalCalendarText}>Crie uma nova notificação</Text>
                             <Text style={styles.textModalTitle2}>Hora de cuidar da sua planta! 🌿📲</Text>
-                            <TextInput
-                                placeholder="Escreva seu lembrete"
-                                placeholderTextColor="#8eb08d"
-                                style={styles.textInput}
-                                value={textoLembrete}
-                                maxLength={30}
-                                onChangeText={(text) => setTextoLembrete(text)}></TextInput>
+                            <Picker
+                                selectedValue={selectedActivity}
+                                onValueChange={(itemValue) => setSelectedActivity(itemValue)}
+                            >
+                                <Picker.Item label="Selecione um tipo de cuidado" value="" />
+                                {/* {activities.map((activity) => (
+                                    <Picker.Item
+                                        key={activity.id} // Supondo que a API retorna {id, atividade}
+                                        label={activity.atividade}
+                                        value={activity.id}
+                                    />
+                                ))} */}
+                            </Picker>
                             <View style={styles.scrollContainer}>
                                 <ScrollView
                                     style={styles.scroll}
@@ -285,7 +355,7 @@ export default function ModalLembretes({ setVisible }) {
                                     ))}
                                 </ScrollView>
                             </View>
-                            <Text style={styles.selectedTime}>
+                            <Text style={{ margin: 10 }}>
                                 Horário selecionado: {horaSelecionada}:{minutoSelecionado}
                             </Text>
                             <View style={styles.pickerSelect}>
@@ -492,7 +562,7 @@ const styles = StyleSheet.create({
         padding: 10,
     },
     itemContainer: {
-        flexDirection: 'row',
+        flexDirection: "row",
         alignItems: 'center',
         justifyContent: 'space-between',
         padding: 13,
@@ -500,6 +570,7 @@ const styles = StyleSheet.create({
         marginBottom: 15,
         paddingLeft: 15,
         borderRadius: 15,
+        width: "85%",
     },
     textoSelecionar: {
         fontSize: 18,
@@ -520,7 +591,7 @@ const styles = StyleSheet.create({
         marginHorizontal: 10,
         marginTop: 10,
         marginBottom: 10,
-        height: "58%",
+        height: "56%",
         backgroundColor: "#f5faf5",
     },
     ViewCalendar: {
@@ -529,6 +600,13 @@ const styles = StyleSheet.create({
         margin: 10,
         borderRadius: 20,
         backgroundColor: "#f5faf5",
-    }
-
+    },
+    containerCheck: {
+        alignItems: 'center',
+        justifyContent: "center",
+        borderRadius: 10,
+        marginLeft: 8,
+        width: "13%",
+        height: "83%"
+    },
 })

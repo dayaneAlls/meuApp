@@ -160,7 +160,7 @@ export default function Visitante() {
                     <Icon name="seed" size={40} color="#7a4526" style={{ paddingRight: 10 }} />
                     <Text style={styles.textDetailsPlant}>
                       <Text style={{ fontWeight: 'bold' }}>Cultivo:</Text>
-                      {"\n"}{plantInfo.propagation_methods}
+                      {"\n"} jhsdhsdhsu
                     </Text>
                   </View>
                   <View style={styles.scrollModal2}>

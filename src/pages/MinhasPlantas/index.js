@@ -2,44 +2,46 @@ import React, { useState, useEffect, useContext } from "react";
 import api from "../../services/api";
 import to from "await-to-js";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
-import { View, Text, StyleSheet, FlatList, SafeAreaView, Image, TouchableOpacity, Modal, ScrollView, Dimensions, ImageBackground, Button } from 'react-native';
+import { View, Text, StyleSheet, FlatList, SafeAreaView, Image, TouchableOpacity, Modal, ImageBackground } from 'react-native';
 import Header from '../../components/Header'
 import ModalLembretes from "../../components/ModalLembretes/lembretes";
+import ModalHistorico from "../../components/ModalHistorico/historico";
 import { AuthContext } from "../../contexts/auth";
+import { useNavigation } from "@react-navigation/native";
 
 export default function MinhasPlantas() {
 
+    const navigation = useNavigation();
     const [plantList, setPlantList] = useState([]);
-    const userToken = useContext(AuthContext);
+    const { listPlants } = useContext(AuthContext);
+    const [plantInfo, setPlantInfo] = useState(null);
+    const [selectedPlant, setSelectedPlant] = useState(null);
     const [modalCuidados, setModalCuidados] = useState(false);
     const [modalLembrete, setModalLembrete] = useState(false);
     const [modalHistorico, setModalHistorico] = useState(false);
+    const [confirmExcluir, setConfirmExcluir] = useState(false);
+    const [alterarNomePlanta, setAlterarNomePlanta] = useState(false);
 
-    /*useEffect(() => {
-        if (route.params?.newPlant) {
-            setPlantList([...plantList, route.params.newPlant]); // Adiciona a nova planta à lista
-        }
-    }, [route.params?.newPlant]);*/
-
-    async function handleList() {
-        // console.log({ search });
-        console.log(userToken);
-        
-        const [error, response] = await to(api.get(`auth/plant/list`, {
-            headers: { 
-              '': '', 
-              'Authorization': `Bearer ${userToken}`
-            } }));
+    async function fetchPlantInfo(plant_access_token) {
+        // console.log({ plant_access_token });
+        const [error, response] = await to(api.get(`unauth/plant/info?plant_access_token=${plant_access_token}`));
 
         if (error) {
-            console.error('Erro ao buscar plantas:', error);
+            console.error('Erro ao buscar informações da planta:', error);
             return;
         }
-        console.log(response);
-        
-        // setPlantList(response.data.plants);
-        // setPlanta("");
+        setPlantInfo(response.data.plants);
     }
+
+    async function handleList() {
+        var response = await listPlants();
+        //console.log({ b: response.data.list });
+        setPlantList(response.data.list);
+    }
+
+    useEffect(() => {
+        handleList();
+    }, []);
 
     const handleDelete = (index) => {
         const updatedList = plantList.filter((_, i) => i !== index);
@@ -48,13 +50,18 @@ export default function MinhasPlantas() {
 
     const renderItem = ({ item, index }) => (
         <View style={styles.card}>
-            <TouchableOpacity style={styles.cardNoticia} onPress={() => setModalCuidados(true)}>
-                {/* <Image source={{ uri: `data:image/jpeg;base64,${item.thumbnail}` }} style={styles.cardImage} /> */}
-                {/* <Text style={styles.cardText}>{item.entity_name}</Text> */}
+            <TouchableOpacity style={styles.cardNoticia} onPress={() => { setSelectedPlant(item); fetchPlantInfo(item.access_token); setModalCuidados(true) }}>
+                <Image source={{ uri: item.url_imagem }} style={styles.cardImage} />
+                <Text style={styles.cardText}>{item.nome}</Text>
                 <TouchableOpacity
-                    onPress={() => handleDelete(index)} // Chama a função handleDelete passando o index do item
+                    onPress={() => setConfirmExcluir(true)} // Chama a função handleDelete passando o index do item
                 >
-                    <Icon name="trash-can-outline" style={styles.iconPlace} />
+                    <Icon name="trash-can-outline" style={[styles.iconPlace, { left: 100, color: "#cc544e" }]} />
+                </TouchableOpacity>
+                <TouchableOpacity
+                    onPress={() => setAlterarNomePlanta(true)} // Chama a função handleDelete passando o index do item
+                >
+                    <Icon name="square-edit-outline" style={[styles.iconPlace, { left: 60, color: "#659e5f" }]} />
                 </TouchableOpacity>
             </TouchableOpacity>
         </View>
@@ -65,93 +72,142 @@ export default function MinhasPlantas() {
             <Header title='Minhas Plantas'></Header>
             <SafeAreaView >
                 <ImageBackground
-                    //  source={require("../../img/fundocasa.jpg")}
-                    // source={require("../../img/fundoMinhasPlantas.png")}
+                    //source={require("../../img/fundocasa.jpg")}
+                    //source={require("../../img/fundoMinhasPlantas.png")}
                     style={styles.imageBackground}
-                    imageStyle={{ opacity: 0.5 }}
+                    imageStyle={{ opacity: 0.3 }}
                 >
                     <View style={styles.container}>
-                        <Button onClick={handleList()}></Button>
-                        <FlatList
-                            data={plantList}
-                            keyExtractor={(item, index) => index}
-                            renderItem={renderItem}
-                        />
+                        <View style={{ marginBottom: 20, height: "96%", justifyContent: "center" }}>
+                            <FlatList
+                                data={plantList}
+                                keyExtractor={(item, index) => index}
+                                renderItem={renderItem}
+                                ListEmptyComponent={<Text style={{ textAlign: 'center', marginTop: 20 }}>Nenhuma planta adicionada{"\n"}Adicione uma planta à sua lista de plantas clicando no botão "adicionar"</Text>}
+                            />
+                            <View style={{ borderColor: "#a3d1a1", justifyContent: "center", alignItems: "center" }}>
+                                < TouchableOpacity style={styles.buttonAddLembrete} onPress={() => navigation.navigate("Pesquisar Plantas")}>
+                                    <Icon name="plus" style={{ fontSize: 50, color: "#2a3b29" }} />
+                                </TouchableOpacity>
+                                <Text >Adicionar</Text>
+                            </View>
+                        </View>
                         <Modal
                             animationType="slide"
                             transparent={true}
-                            visible={modalCuidados}
-                            onRequestClose={() => setModalCuidados(false)}
-                        >
-                            <View style={styles.modalContainer}>
-                                <View style={styles.modalHeader}>
-                                    <TouchableOpacity onPress={() => setModalCuidados(false)}>
-                                        <Icon name="arrow-left" style={styles.iconVoltar} />
-                                    </TouchableOpacity>
-                                    <Text style={styles.modalTitle}>Cuidados Minhas Plantas</Text>
-                                </View>
-                                <View style={{ padding: 20 }}>
-                                    <View style={styles.modalCard}>
-                                        <Image
-                                            source={{ uri: `data:image/jpeg;base64,${plantList.thumbnail}` }}
-                                            style={styles.modalImage}
-                                        />
-                                        <Text style={styles.textNamePlant}>{plantList.entity_name}</Text>
-                                    </View>
-                                    <View style={styles.viewDetails}>
-                                        <View style={styles.viewDescricao}>
-                                            <Text numberOfLines={7} style={styles.textDetailsPlant}>
-                                                <Text style={{ fontWeight: 'bold' }}>Nome comum:</Text> {plantList.common_names}okotre
-                                                <Text style={{ fontWeight: 'bold' }}>{"\n"}Descrição:</Text> {plantList.description}Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.</Text>
-                                        </View>
-                                        <View style={[styles.viewDetails2, { flexWrap: 'wrap', flexDirection: 'row' }]}>
-                                            <View style={styles.viewDescricao2}>
-                                                <Icon name="sprout" size={35} color="green" style={{ paddingRight: 15 }} />
-                                                <Text style={styles.textDetailsPlant}>
-                                                    <Text style={{ fontWeight: 'bold' }}>Comestível:</Text>
-                                                    {"\n"}{plantList.edible_parts}usdf0ifporeit-0
-                                                </Text>
-                                            </View>
-                                            <View style={styles.viewDescricao2}>
-                                                <Icon name="seed" size={40} color="#7a4526" style={{ paddingRight: 10 }} />
-                                                <Text style={styles.textDetailsPlant}>
-                                                    <Text style={{ fontWeight: 'bold' }}>Cultivo:</Text>
-                                                    {"\n"}{plantList.propagation_methods}gpyrtyort-
-                                                </Text>
-                                            </View>
-                                            <View style={styles.viewDescricao2}>
-                                                <Icon name="water-check" size={40} color="#51a9e0" style={{ paddingRight: 10 }} />
-                                                <Text style={styles.textDetailsPlant}>
-                                                    <Text style={{ fontWeight: 'bold' }}>Rega:</Text>
-                                                    {"\n"}{plantList.watering}kgkfhpfgt
-                                                </Text>
-                                            </View>
-                                            <View style={styles.viewDescricao2}>
-                                                <Icon name="white-balance-sunny" size={40} color="#f5f125" style={{ paddingRight: 10 }} />
-                                                <Text style={styles.textDetailsPlant}>
-                                                    <Text style={{ fontWeight: 'bold' }}>Iluminação:</Text>
-                                                    {"\n"}{plantList.Iluminacao}kghokfh-f
-                                                </Text>
-                                            </View>
-                                        </View>
-                                    </View>
-                                </View>
-                                <View style={[styles.modalCard, { flexWrap: 'wrap', flexDirection: 'row' }]}>
-                                    <View style={styles.viewButtons}>
-                                        <TouchableOpacity style={styles.buttons} onPress={() => { setModalCuidados(false); setModalLembrete(true); }}>
-                                            {/* <Text style={{ fontWeight: 'bold', fontSize: 20, textAlign: 'center', paddingLeft: 10, paddingRight: 10, color: 'white' }}>Adicionar{"\n"}lembrete</Text> */}
-                                            <Icon name="bell-plus" size={55} color="#f6fff5" />
+                            visible={confirmExcluir}
+                            onRequestClose={() => setConfirmExcluir(false)}>
+                            <View style={styles.modalExcluirContainer}>
+                                <View style={styles.modalExcluirContent}>
+                                    <Text style={styles.modalExcluirText}>Você tem certeza que deseja excluir essa planta da sua lista de plantas?</Text>
+                                    <View style={styles.buttonExcluirContainer}>
+                                        <TouchableOpacity style={styles.buttonExcluir} onPress={() => handleDelete(index)}>
+                                            <Text style={styles.buttonExcluirText}>Excluir</Text>
                                         </TouchableOpacity>
-                                    </View>
-                                    <View style={styles.viewButtons}>
-                                        <TouchableOpacity style={styles.buttons} onPress={() => { setModalCuidados(false); setModalHistorico(true); }}>
-                                            {/* <Text style={{ fontWeight: 'bold', fontSize: 20, textAlign: 'center', paddingLeft: 10, paddingRight: 10, color: 'white' }}>Histórico de{"\n"}cuidados</Text> */}
-                                            <Icon name="clipboard-text-clock-outline" size={55} color="#f6fff5" />
+                                        <TouchableOpacity style={styles.buttonExcluir} onPress={() => setConfirmExcluir(false)}>
+                                            <Text style={styles.buttonExcluirText}>Cancelar</Text>
                                         </TouchableOpacity>
                                     </View>
                                 </View>
                             </View>
                         </Modal>
+                        <Modal
+                            animationType="slide"
+                            transparent={true}
+                            visible={alterarNomePlanta}
+                            onRequestClose={() => setAlterarNomePlanta(false)}>
+                            <View style={styles.modalExcluirContainer}>
+                                <View style={styles.modalExcluirContent}>
+                                    <Text style={styles.modalExcluirText}>Insira o novo nome da sua planta</Text>
+                                    <View style={styles.buttonExcluirContainer}>
+
+                                        <TouchableOpacity style={styles.buttonExcluir} onPress={() => handleDelete(index)}>
+                                            <Text style={styles.buttonExcluirText}>Salvar</Text>
+                                        </TouchableOpacity>
+                                        <TouchableOpacity style={styles.buttonExcluir} onPress={() => setAlterarNomePlanta(false)}>
+                                            <Text style={styles.buttonExcluirText}>Cancelar</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                </View>
+                            </View>
+                        </Modal>
+                        {modalCuidados && selectedPlant && plantInfo && (
+                            <Modal
+                                animationType="slide"
+                                transparent={true}
+                                visible={modalCuidados}
+                                onRequestClose={() => setModalCuidados(false)}
+                            >
+                                <View style={styles.modalContainer}>
+                                    <View style={styles.modalHeader}>
+                                        <TouchableOpacity onPress={() => setModalCuidados(false)}>
+                                            <Icon name="arrow-left" style={styles.iconVoltar} />
+                                        </TouchableOpacity>
+                                        <Text style={styles.modalTitle}>Cuidados Minhas Plantas</Text>
+                                    </View>
+                                    <View style={{ padding: 20 }}>
+                                        <View style={{ justifyContent: "flex-start", alignItems: "center" }}>
+                                            <Image
+                                                source={{ uri: selectedPlant.url_imagem }}
+                                                style={styles.modalImage}
+                                            />
+                                            <Text style={styles.textNamePlant}>{plantInfo.name}</Text>
+                                        </View>
+                                        <View style={styles.viewDetails}>
+                                            <View style={styles.viewDescricao}>
+                                                <Text numberOfLines={7} style={styles.textDetailsPlant}>
+                                                    <Text style={{ fontWeight: 'bold' }}>Nome comum:</Text> {plantInfo.common_names}
+                                                    <Text style={{ fontWeight: 'bold' }}>{"\n"}Descrição:</Text> {plantInfo.description.value}</Text>
+                                            </View>
+                                            <View style={[styles.viewDetails2, { flexWrap: 'wrap', flexDirection: 'row' }]}>
+                                                <View style={styles.viewDescricao2}>
+                                                    <Icon name="sprout" size={35} color="green" style={{ paddingRight: 15 }} />
+                                                    <Text style={styles.textDetailsPlant}>
+                                                        <Text style={{ fontWeight: 'bold' }}>Comestível:</Text>
+                                                        {"\n"}{plantInfo.edible_parts}
+                                                    </Text>
+                                                </View>
+                                                <View style={styles.viewDescricao2}>
+                                                    <Icon name="seed" size={40} color="#7a4526" style={{ paddingRight: 10 }} />
+                                                    <Text style={styles.textDetailsPlant}>
+                                                        <Text style={{ fontWeight: 'bold' }}>Cultivo:</Text>
+                                                        {"\n"}{plantInfo.propagation_methods}
+                                                    </Text>
+                                                </View>
+                                                <View style={styles.viewDescricao2}>
+                                                    <Icon name="water-check" size={40} color="#51a9e0" style={{ paddingRight: 10 }} />
+                                                    <Text style={styles.textDetailsPlant}>
+                                                        <Text style={{ fontWeight: 'bold' }}>Rega:</Text>
+                                                        {"\n"}{plantInfo.watering.max}
+                                                    </Text>
+                                                </View>
+                                                <View style={styles.viewDescricao2}>
+                                                    <Icon name="white-balance-sunny" size={40} color="#f5f125" style={{ paddingRight: 10 }} />
+                                                    <Text style={styles.textDetailsPlant}>
+                                                        <Text style={{ fontWeight: 'bold' }}>Iluminação:</Text>
+                                                        {"\n"}{plantInfo.Iluminacao}
+                                                    </Text>
+                                                </View>
+                                            </View>
+                                        </View>
+                                    </View>
+                                    <View style={styles.modalBottons}>
+                                        <View style={styles.viewButtons}>
+                                            <TouchableOpacity style={styles.buttons} onPress={() => { setModalCuidados(false); setModalLembrete(true); }}>
+                                                <Icon name="bell-ring" size={45} color="#f6fff5" />
+                                            </TouchableOpacity>
+                                            <Text style={styles.textAddPlant}>Lembretes</Text>
+                                        </View>
+                                        <View style={styles.viewButtons}>
+                                            <TouchableOpacity style={styles.buttons} onPress={() => { setModalCuidados(false); setModalHistorico(true); }}>
+                                                <Icon name="clipboard-text-clock-outline" size={45} color="#f6fff5" />
+                                            </TouchableOpacity>
+                                            <Text style={styles.textAddPlant}>Histórico</Text>
+                                        </View>
+                                    </View>
+                                </View>
+                            </Modal>
+                        )}
                         <Modal
                             animationType="slide"
                             transparent={true}
@@ -163,11 +219,8 @@ export default function MinhasPlantas() {
                             animationType="slide"
                             transparent={true}
                             visible={modalHistorico}
-                            onRequestClose={() => setModalHistorico(false)}
                         >
-                            <View>
-
-                            </View>
+                            <ModalHistorico setVisible={() => { setModalCuidados(true); setModalHistorico(false); }}></ModalHistorico>
                         </Modal>
                     </View >
                 </ImageBackground >
@@ -218,21 +271,19 @@ const styles = StyleSheet.create({
     },
     iconPlace: {
         position: "absolute",
-        left: 100,
-        top: -55,
-        fontSize: 50,
-        color: "#2a3b29",
+        top: -45,
+        fontSize: 40,
     },
     modalContainer: {
         backgroundColor: '#f6fff5', //#faf2ed
         flex: 1,
     },
     modalImage: {
-        width: "90%",
-        height: 190,
-        borderRadius: 20,
-        marginBottom: 10,
-        marginTop: 10,
+        width: "80%",
+        height: 180,
+        borderRadius: 10,
+        marginBottom: 5,
+        marginTop: 5,
     },
     buttons: {
         alignItems: 'center',
@@ -244,8 +295,8 @@ const styles = StyleSheet.create({
         borderColor: "#587f56",
         marginTop: 10,
         shadowColor: 'black',
-        elevation: 10,
-        marginBottom: 10,
+        elevation: 5,
+        marginBottom: 5,
         marginLeft: 10,
     },
     viewDetails: {
@@ -263,7 +314,7 @@ const styles = StyleSheet.create({
         fontFamily: 'sans-serif-condensed',
 
     },
-    modalCard: {
+    modalBottons: {
         justifyContent: "center",
         alignItems: "space-between",
         flexDirection: 'row',
@@ -304,10 +355,10 @@ const styles = StyleSheet.create({
     },
     viewButtons: {
         marginTop: 5,
-        marginBottom: 5,
         marginHorizontal: 10,
-        justifyContent: "space-between",
-        flexDirection: 'row',
+        justifyContent: "center",
+        alignItems: "center",
+        flexWrap: 'wrap',
     },
     iconVoltar: {
         fontSize: 30,
@@ -327,5 +378,59 @@ const styles = StyleSheet.create({
         alignItems: "center",
         justifyContent: "flex-start",
         height: 50,
+    },
+    textAddPlant: {
+        fontSize: 13,
+        textAlign: 'center',
+        color: 'black',
+        flexWrap: "wrap"
+    },
+    modalExcluirContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(255, 255, 255, 0.9)', // Fundo semi-transparente
+    },
+    modalExcluirContent: {
+        width: '100%',
+        backgroundColor: '#afcca8',
+        borderRadius: 10,
+        padding: 20,
+        marginTop: 50,
+        alignItems: 'center',
+    },
+    modalExcluirText: {
+        fontSize: 25,
+        marginBottom: 20,
+        textAlign: 'center',
+    },
+    buttonExcluirContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        width: '100%',
+    },
+    buttonExcluir: {
+        flex: 1,
+        backgroundColor: '#3A4D39',
+        padding: 10,
+        borderRadius: 5,
+        marginHorizontal: 5,
+        alignItems: 'center',
+    },
+    buttonExcluirText: {
+        color: 'white',
+        fontWeight: 'bold',
+        fontSize: 20,
+    },
+    buttonAddLembrete: {
+        alignItems: 'center',
+        justifyContent: "center",
+        padding: 5,
+        backgroundColor: "#a3d1a1",
+        borderRadius: 30,
+        marginTop: 10,
+        marginBottom: 5,
+        shadowColor: 'black',
+        elevation: 5,
     },
 })
