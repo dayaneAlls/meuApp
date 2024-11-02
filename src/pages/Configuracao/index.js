@@ -38,7 +38,7 @@ export default function Configuracao() {
                     <View style={styles.viewPersona}>
                         <View style={styles.personaInner}>
                             <Image
-                                source={require("../../img/avatares3/5.png")}
+                                source={require("../../img/avatares/5.png")}
                                 style={styles.avatar}
                             ></Image>
                             <Text style={styles.userName}>{userName}</Text>
