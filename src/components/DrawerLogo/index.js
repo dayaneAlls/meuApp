@@ -12,8 +12,8 @@ export default function DrawerLog(props) {
     return (
         <DrawerContentScrollView {...props}>
             <View style={styles.container}>
-                <Image source={require('../../img/logo1.png')} style={{ resizeMode: 'contain' }}></Image>
-                <Text style={{ color: '#f0f2ff', fontSize: 25, paddingTop: 35, fontWeight: 'bold' }}>Bem-vindo(a)!</Text>
+                <Image source={require('../../img/avatares3/5.png')} style={styles.avatar}></Image>
+                <Text style={{ color: '#f0f2ff', fontSize: 20, paddingTop: 20, fontWeight: 'bold' }}>Bem-vindo(a)!</Text>
                 <Text style={{ color: '#f0f2ff', fontSize: 30, fontWeight: 'bold', marginBottom: 30 }}>{userName}</Text>
             </View>
             <DrawerItemList {...props} />
@@ -91,5 +91,10 @@ const styles = StyleSheet.create({
         color: 'white',
         fontWeight: 'bold',
         fontSize: 20,
+    },
+    avatar: {
+        width: 170,
+        height: 170,
+
     },
 })

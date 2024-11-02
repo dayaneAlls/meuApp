@@ -17,7 +17,7 @@ import { LinearGradient } from "expo-linear-gradient";
 
 export default function SignUp() {
   const [hidePass, setHidePass] = useState(true);
-  const { signUp, loadingAuth } = useContext(AuthContext);
+  const { signUp, loading } = useContext(AuthContext);
   const [user, setUser] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -29,7 +29,12 @@ export default function SignUp() {
       return;
     }
     signUp(email, password, user, passwordConfirmation);
+    setUser("");
+    setEmail("");
+    setPassword("");
+    setPasswordConfirmation("");
   }
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : ""}
@@ -115,7 +120,7 @@ export default function SignUp() {
             colors={["#587f56", "#587f56", "#3a4d39"]}
           >
             <TouchableOpacity onPress={handleSignUp}>
-              {loadingAuth ? (
+              {loading ? (
                 <ActivityIndicator size={50} color={"#fff"} />
               ) : (
                 <Text style={styles.txtCadastrar}>CADASTRAR</Text>

@@ -12,6 +12,7 @@ function AuthProvider({ children }) {
     const [userToken, setUserToken] = useState(null);
     const [userName, setUserName] = useState(null);
     const [userEmail, setUserEmail] = useState(null);
+    const [userCares, setUserCares] = useState(null);
     const [codigo, setCodigo] = useState(null);
     const [loading, setLoading] = useState(false);
 
@@ -32,6 +33,8 @@ function AuthProvider({ children }) {
                         await AsyncStorage.removeItem("@userToken");
                         setUser(null);
                         setUserToken(null);
+                        setUserName(null);
+                        setUserEmail(null);
                     } else {
                         setUserToken(storageUserToken);
                         setUser(userInfo);
@@ -41,11 +44,15 @@ function AuthProvider({ children }) {
                 } else {
                     setUser(null);
                     setUserToken(null);
+                    setUserName(null);
+                    setUserEmail(null);
                 }
             } catch (error) {
                 console.log("Erro ao carregar usuário do AsyncStorage:", error);
                 setUser(null);
                 setUserToken(null);
+                setUserName(null);
+                setUserEmail(null);
             } finally {
                 setLoading(false);
             }
@@ -84,6 +91,8 @@ function AuthProvider({ children }) {
             await AsyncStorage.removeItem("@userToken"); // Remove apenas o token do usuário
             setUser(null);
             setUserToken(null);
+            setUserName(null);
+            setUserEmail(null);
         } catch (error) {
             console.log("Erro ao remover token do AsyncStorage", error);
         }
@@ -117,6 +126,8 @@ function AuthProvider({ children }) {
             setUser(userInfo);
             setUserName(userName);
             setUserEmail(userEmail);
+
+            setUserCares(listCare());
 
         } catch (err) {
             console.log("Erro ao logar:", err);
@@ -205,6 +216,7 @@ function AuthProvider({ children }) {
         }
         return response;
     }
+
     async function listActivities() {
         const [error, response] = await to(api.get(`unauth/plant/activity/list`));
         if (error) {
@@ -215,21 +227,61 @@ function AuthProvider({ children }) {
         return response;
     }
 
-    // async function addLembrete(plantId) {
-    //     const [error, response] = await to(api.post(`auth/plant/list`, {
-    //         headers: {
-    //             'Authorization': `Bearer ${userToken}`
-    //         }
-    //     }));
-    //     if (error) {
-    //         console.error('Erro ao adicionar lembrete:', error);
-    //         setLoading(false);
-    //         return;
-    //     }
-    // }
+    async function addLembrete(plantId, novaNotificacao) {
+        console.log({
+            headers: {
+                'Authorization': `Bearer ${userToken}`
+            },
+            body: {
+                ...novaNotificacao
+            }
+        });
+
+        const [error, response] = await to(api.post(`auth/plant/${plantId}/care/add`,
+            {
+                ...novaNotificacao
+            },
+            {
+                headers: {
+                    'Authorization': `Bearer ${userToken}`
+                }
+            }
+        ));
+        if (error) {
+            console.error('Erro ao adicionar lembrete:', error);
+            setLoading(false);
+            return;
+        }
+    }
+
+    async function listCare() {
+        const [error, response] = await to(api.get(`auth/user/care/list`, {
+            headers: {
+                'Authorization': `Bearer ${userToken}`
+            }
+        }));
+        if (error) {
+            console.error('Erro ao buscar cuidados:', error);
+            return;
+        }
+        return response;
+    }
+
+    async function changeNamePlant(namePlant) {
+        setLoading(true);
+        const [error, response] = await to(api.post('',
+            { namePlant },
+        ))
+        if (error) {
+            console.log(error)
+            setLoading(false);
+            throw new Error("Erro ao alterar nome", error)
+        }
+        setLoading(false);
+    }
 
     return (
-        <AuthContext.Provider value={{ signed: !!user, userName, userEmail, signUp, signOut, signIn, recuperarSenha, cadastrar, codeSubmit, addNewPlant, listPlants, listActivities, loading }}>
+        <AuthContext.Provider value={{ signed: !!user, userName, userEmail, signUp, signOut, signIn, recuperarSenha, cadastrar, codeSubmit, addNewPlant, listPlants, listActivities, addLembrete, loading }}>
             {children}
         </AuthContext.Provider>
     )

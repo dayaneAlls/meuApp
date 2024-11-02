@@ -19,6 +19,7 @@ import {
     Modal,
     FlatList,
 } from "react-native";
+import { SafeAreaView } from "react-native";
 
 export default function PesquisarPlantas() {
 
@@ -88,12 +89,12 @@ export default function PesquisarPlantas() {
     return (
         <>
             <Header title='Pesquisar Plantas'></Header>
-            <ImageBackground
-                source={require("../../img/fundoPesquisar2.jpg")}
-                style={styles.imageBackground}
-                imageStyle={{ opacity: 0.2 }}
-            >
-                <View style={styles.container}>
+            <SafeAreaView style={styles.container}>
+                <ImageBackground
+                    source={require("../../img/fundoPesquisar2.jpg")}
+                    style={styles.imageBackground}
+                    imageStyle={{ opacity: 0.2 }}>
+
                     <View style={{ marginBottom: 20 }}>
                         <TextInput
                             placeholder="Pesquise uma Planta"
@@ -124,7 +125,7 @@ export default function PesquisarPlantas() {
                             visible={modalPlant}
                             onRequestClose={() => setModalPlant(false)}
                         >
-                            <View style={styles.modalContainer}>
+                            <ScrollView style={styles.modalContainer}>
                                 <View style={styles.modalHeader}>
                                     <TouchableOpacity onPress={() => setModalPlant(false)}>
                                         <Icon name="arrow-left" style={styles.iconVoltar} />
@@ -180,7 +181,7 @@ export default function PesquisarPlantas() {
                                                 <Icon name="seed" size={40} color="#7a4526" style={{ paddingRight: 10 }} />
                                                 <Text style={styles.textDetailsPlant}>
                                                     <Text style={{ fontWeight: 'bold' }}>Cultivo:</Text>
-                                                    {"\n"} jhsdhsdhsu
+                                                    {"\n"}
                                                 </Text>
                                             </View>
                                             <View style={styles.scrollModal2}>
@@ -206,11 +207,11 @@ export default function PesquisarPlantas() {
                                         <Text style={styles.textAddPlant}>Adicionar Planta</Text>
                                     </View>
                                 </View>
-                            </View>
+                            </ScrollView>
                         </Modal>
                     )}
-                </View>
-            </ImageBackground >
+                </ImageBackground >
+            </SafeAreaView>
         </>
     );
 }

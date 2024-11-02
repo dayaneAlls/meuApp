@@ -2,10 +2,10 @@ import React, { useState, useEffect, useContext } from "react";
 import api from "../../services/api";
 import to from "await-to-js";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
-import { View, Text, StyleSheet, FlatList, SafeAreaView, Image, TouchableOpacity, Modal, ImageBackground } from 'react-native';
+import { View, Text, StyleSheet, FlatList, SafeAreaView, Image, TouchableOpacity, Modal, ImageBackground, TextInput, ScrollView } from 'react-native';
 import Header from '../../components/Header'
-import ModalLembretes from "../../components/ModalLembretes/lembretes";
-import ModalHistorico from "../../components/ModalHistorico/historico";
+import ModalLembretes from "../ModalLembretes/lembretes";
+import ModalHistorico from "../ModalHistorico/historico";
 import { AuthContext } from "../../contexts/auth";
 import { useNavigation } from "@react-navigation/native";
 
@@ -13,14 +13,15 @@ export default function MinhasPlantas() {
 
     const navigation = useNavigation();
     const [plantList, setPlantList] = useState([]);
-    const { listPlants } = useContext(AuthContext);
+    const { listPlants, changeNamePlant } = useContext(AuthContext);
     const [plantInfo, setPlantInfo] = useState(null);
     const [selectedPlant, setSelectedPlant] = useState(null);
     const [modalCuidados, setModalCuidados] = useState(false);
     const [modalLembrete, setModalLembrete] = useState(false);
     const [modalHistorico, setModalHistorico] = useState(false);
     const [confirmExcluir, setConfirmExcluir] = useState(false);
-    const [alterarNomePlanta, setAlterarNomePlanta] = useState(false);
+    const [namePlant, setNamePlant] = useState("");
+    const [modalAlterarNomePlanta, setModalAlterarNomePlanta] = useState(false);
 
     async function fetchPlantInfo(plant_access_token) {
         // console.log({ plant_access_token });
@@ -38,6 +39,20 @@ export default function MinhasPlantas() {
         //console.log({ b: response.data.list });
         setPlantList(response.data.list);
     }
+
+    async function handleChangeNamePlant() {
+        if (namePlant === "") {
+            alert("Por favor digite o nome!");
+            return;
+        }
+        changeNamePlant(namePlant);
+        setNamePlant("");
+    }
+
+    const handleCancel = () => {
+        setModalAlterarNomePlanta(false);
+        setNamePlant("");
+    };
 
     useEffect(() => {
         handleList();
@@ -59,7 +74,7 @@ export default function MinhasPlantas() {
                     <Icon name="trash-can-outline" style={[styles.iconPlace, { left: 100, color: "#cc544e" }]} />
                 </TouchableOpacity>
                 <TouchableOpacity
-                    onPress={() => setAlterarNomePlanta(true)} // Chama a função handleDelete passando o index do item
+                    onPress={() => setModalAlterarNomePlanta(true)} // Chama a função handleDelete passando o index do item
                 >
                     <Icon name="square-edit-outline" style={[styles.iconPlace, { left: 60, color: "#659e5f" }]} />
                 </TouchableOpacity>
@@ -83,13 +98,15 @@ export default function MinhasPlantas() {
                                 data={plantList}
                                 keyExtractor={(item, index) => index}
                                 renderItem={renderItem}
-                                ListEmptyComponent={<Text style={{ textAlign: 'center', marginTop: 20 }}>Nenhuma planta adicionada{"\n"}Adicione uma planta à sua lista de plantas clicando no botão "adicionar"</Text>}
+                                ListEmptyComponent={<Text style={styles.textEmptyList}>
+                                    Você ainda não tem plantas adicionadas!
+                                    {"\n"}Adicione plantas à sua lista de cuidados clicando no botão "Adicionar"</Text>}
                             />
                             <View style={{ borderColor: "#a3d1a1", justifyContent: "center", alignItems: "center" }}>
                                 < TouchableOpacity style={styles.buttonAddLembrete} onPress={() => navigation.navigate("Pesquisar Plantas")}>
-                                    <Icon name="plus" style={{ fontSize: 50, color: "#2a3b29" }} />
+                                    <Icon name="plus" style={{ fontSize: 40, color: "#2a3b29" }} />
                                 </TouchableOpacity>
-                                <Text >Adicionar</Text>
+                                <Text style={{ marginBottom: 10 }}>Adicionar</Text>
                             </View>
                         </View>
                         <Modal
@@ -114,17 +131,24 @@ export default function MinhasPlantas() {
                         <Modal
                             animationType="slide"
                             transparent={true}
-                            visible={alterarNomePlanta}
-                            onRequestClose={() => setAlterarNomePlanta(false)}>
+                            visible={modalAlterarNomePlanta}
+                            onRequestClose={() => setModalAlterarNomePlanta(false)}>
                             <View style={styles.modalExcluirContainer}>
                                 <View style={styles.modalExcluirContent}>
                                     <Text style={styles.modalExcluirText}>Insira o novo nome da sua planta</Text>
+                                    <TextInput
+                                        style={styles.input}
+                                        placeholder="Nome"
+                                        value={namePlant}
+                                        onChangeText={(text) => setNamePlant(text)}
+                                        placeholderTextColor="#abc7a9"
+                                        maxLength={25}
+                                    ></TextInput>
                                     <View style={styles.buttonExcluirContainer}>
-
-                                        <TouchableOpacity style={styles.buttonExcluir} onPress={() => handleDelete(index)}>
-                                            <Text style={styles.buttonExcluirText}>Salvar</Text>
+                                        <TouchableOpacity style={styles.buttonExcluir} onPress={() => handleChangeNamePlant(index)}>
+                                            <Text style={styles.buttonExcluirText}>Alterar</Text>
                                         </TouchableOpacity>
-                                        <TouchableOpacity style={styles.buttonExcluir} onPress={() => setAlterarNomePlanta(false)}>
+                                        <TouchableOpacity style={styles.buttonExcluir} onPress={handleCancel}>
                                             <Text style={styles.buttonExcluirText}>Cancelar</Text>
                                         </TouchableOpacity>
                                     </View>
@@ -138,7 +162,7 @@ export default function MinhasPlantas() {
                                 visible={modalCuidados}
                                 onRequestClose={() => setModalCuidados(false)}
                             >
-                                <View style={styles.modalContainer}>
+                                <ScrollView style={styles.modalContainer}>
                                     <View style={styles.modalHeader}>
                                         <TouchableOpacity onPress={() => setModalCuidados(false)}>
                                             <Icon name="arrow-left" style={styles.iconVoltar} />
@@ -205,15 +229,16 @@ export default function MinhasPlantas() {
                                             <Text style={styles.textAddPlant}>Histórico</Text>
                                         </View>
                                     </View>
-                                </View>
+                                </ScrollView>
                             </Modal>
                         )}
                         <Modal
                             animationType="slide"
                             transparent={true}
                             visible={modalLembrete}
+
                         >
-                            <ModalLembretes setVisible={() => { setModalCuidados(true); setModalLembrete(false); }}></ModalLembretes>
+                            <ModalLembretes selectedPlant={selectedPlant} setVisible={() => { setModalCuidados(true); setModalLembrete(false); }}></ModalLembretes>
                         </Modal>
                         <Modal
                             animationType="slide"
@@ -392,7 +417,7 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(255, 255, 255, 0.9)', // Fundo semi-transparente
     },
     modalExcluirContent: {
-        width: '100%',
+        width: '90%',
         backgroundColor: '#afcca8',
         borderRadius: 10,
         padding: 20,
@@ -429,8 +454,31 @@ const styles = StyleSheet.create({
         backgroundColor: "#a3d1a1",
         borderRadius: 30,
         marginTop: 10,
-        marginBottom: 5,
+        marginBottom: 2,
         shadowColor: 'black',
         elevation: 5,
+    },
+    input: {
+        color: "#3a4d39",
+        height: 55,
+        fontSize: 20,
+        paddingLeft: 15,
+        width: 310,
+        marginBottom: 20,
+        padding: 10,
+        borderRadius: 15,
+        borderWidth: 1,
+        backgroundColor: '#f5f7f5',
+        borderColor: "#b8e0b4",
+        marginTop: 10,
+        marginHorizontal: 10,
+        elevation: 1,
+    },
+    textEmptyList: {
+        textAlign: 'center',
+        justifyContent: "center",
+        marginTop: 20,
+        fontSize: 20,
+        color: "#587f56",
     },
 })
