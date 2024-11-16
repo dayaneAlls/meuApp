@@ -1,12 +1,12 @@
-import React, { useState, useContext, useEffect } from "react";
-import to from 'await-to-js';
-import api from '../../services/api';
+import React, { useState, useContext } from "react";
 import Header from '../../components/Header';
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { AuthContext } from "../../contexts/auth";
+import { useAvatar } from '../../contextAvatar/avatarContext';
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import ConfigModalAlterarNome from "../ConfigModalAlterarNome/alterarNome";
 import ConfigModalAlterarAvatar from "../ConfigModalAlterarAvatar/alterarAvatar";
+import ConfigModalAlterarSenha from "../ConfigModalAlterarSenha/alterarSenha";
+import ConfigModalExcluirConta from "../ConfigModalExcluirConta/excluirConta";
 
 import {
     View,
@@ -16,7 +16,6 @@ import {
     Image,
     Modal,
     SafeAreaView,
-    ActivityIndicator,
     Dimensions,
 } from "react-native";
 
@@ -28,7 +27,9 @@ export default function Configuracao() {
     const { userName, userEmail } = useContext(AuthContext);
     const [modalAlterarNome, setModalAlterarNome] = useState(false);
     const [modalAlterarAvatar, setModalAlterarAvatar] = useState(false);
-
+    const [modalAlterarSenha, setModalAlterarSenha] = useState(false);
+    const [modalExcluirConta, setModalExcluirConta] = useState(false);
+    const { avatar } = useAvatar();
 
     return (
         <>
@@ -37,10 +38,8 @@ export default function Configuracao() {
                 <View style={styles.viewContainer}>
                     <View style={styles.viewPersona}>
                         <View style={styles.personaInner}>
-                            <Image
-                                source={require("../../img/avatares/5.png")}
-                                style={styles.avatar}
-                            ></Image>
+                            {avatar && <Image source={avatar} style={styles.avatar}
+                            ></Image>}
                             <Text style={styles.userName}>{userName}</Text>
                             <Text style={styles.userEmail}>{userEmail}</Text>
                         </View>
@@ -48,39 +47,53 @@ export default function Configuracao() {
                     <View style={styles.viewOptions}>
                         <TouchableOpacity style={styles.buttons} onPress={() => setModalAlterarNome(true)}>
                             <Icon name="account-edit" style={styles.iconButton1} />
-                            <Text style={styles.textAddPlant}>Alterar nome</Text>
+                            <Text style={styles.textBotton}>Alterar nome</Text>
                             <Icon name="menu-right" style={styles.iconButton2} />
                         </TouchableOpacity>
-                        <Modal
-                            animationType="slide"
-                            transparent={true}
-                            visible={modalAlterarNome}
-                        >
-                            <ConfigModalAlterarNome setVisible={() => setModalAlterarNome(false)} />
-                        </Modal>
-                        <TouchableOpacity style={styles.buttons}>
+                        <TouchableOpacity style={styles.buttons} onPress={() => setModalAlterarSenha(true)}>
                             <Icon name="lock-reset" style={styles.iconButton1} />
-                            <Text style={styles.textAddPlant}>Alterar senha</Text>
+                            <Text style={styles.textBotton}>Alterar senha</Text>
                             <Icon name="menu-right" style={styles.iconButton2} />
                         </TouchableOpacity>
                         <TouchableOpacity style={styles.buttons} onPress={() => setModalAlterarAvatar(true)}>
                             <Icon name="image-edit-outline" style={styles.iconButton1} />
-                            <Text style={styles.textAddPlant}>Alterar avatar de perfil</Text>
+                            <Text style={styles.textBotton}>Alterar avatar de perfil</Text>
                             <Icon name="menu-right" style={styles.iconButton2} />
                         </TouchableOpacity>
-                        <Modal
-                            animationType="slide"
-                            transparent={true}
-                            visible={modalAlterarAvatar}
-                        >
-                            <ConfigModalAlterarAvatar setVisible={() => setModalAlterarAvatar(false)} />
-                        </Modal>
-                        <TouchableOpacity style={styles.buttons}>
+                        <TouchableOpacity style={styles.buttons} onPress={() => setModalExcluirConta(true)}>
                             <Icon name="account-remove" style={styles.iconButton1} />
-                            <Text style={styles.textAddPlant}>Excluir conta</Text>
+                            <Text style={styles.textBotton}>Excluir conta</Text>
                             <Icon name="menu-right" style={styles.iconButton2} />
                         </TouchableOpacity>
                     </View>
+                    <Modal
+                        animationType="slide"
+                        transparent={true}
+                        visible={modalAlterarNome}
+                    >
+                        <ConfigModalAlterarNome setVisible={() => setModalAlterarNome(false)} />
+                    </Modal>
+                    <Modal
+                        animationType="slide"
+                        transparent={true}
+                        visible={modalAlterarSenha}
+                    >
+                        <ConfigModalAlterarSenha setVisible={() => setModalAlterarSenha(false)} />
+                    </Modal>
+                    <Modal
+                        animationType="slide"
+                        transparent={true}
+                        visible={modalAlterarAvatar}
+                    >
+                        <ConfigModalAlterarAvatar setVisible={() => setModalAlterarAvatar(false)} />
+                    </Modal>
+                    <Modal
+                        animationType="slide"
+                        transparent={true}
+                        visible={modalExcluirConta}
+                    >
+                        <ConfigModalExcluirConta setVisible={() => setModalExcluirConta(false)} />
+                    </Modal>
                 </View>
             </SafeAreaView>
         </>
@@ -142,7 +155,7 @@ const styles = StyleSheet.create({
         elevation: 1,
         width: "100%",
     },
-    textAddPlant: {
+    textBotton: {
         fontSize: 20 * scaleFactor,
         color: '#496e47',
         fontWeight: "bold",

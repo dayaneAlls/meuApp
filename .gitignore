@@ -32,4 +32,4 @@ yarn-error.*
 *.tsbuildinfo
 
 # Ignorar o arquivo de configuração da API
-src/services/api.js
+src\services\api.js

@@ -4,6 +4,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import api from "../services/api";
 import to from "await-to-js";
 import { jwtDecode } from "jwt-decode";
+//import { limparNotificacoesLocais } from "../utils/notificationsUtils"
 
 export const AuthContext = createContext({});
 
@@ -61,6 +62,8 @@ function AuthProvider({ children }) {
         loadStorage();
     }, []);
 
+
+
     async function signUp(email, password, userName, passwordConfirmation) {
         setLoading(true);
         try {
@@ -88,6 +91,7 @@ function AuthProvider({ children }) {
 
     async function signOut() {
         try {
+            // await limparNotificacoesLocais(); // Limpa notificações locais antes do logout
             await AsyncStorage.removeItem("@userToken"); // Remove apenas o token do usuário
             setUser(null);
             setUserToken(null);
@@ -127,7 +131,7 @@ function AuthProvider({ children }) {
             setUserName(userName);
             setUserEmail(userEmail);
 
-            setUserCares(listCare());
+            // setUserCares(listCare());
 
         } catch (err) {
             console.log("Erro ao logar:", err);
@@ -138,7 +142,7 @@ function AuthProvider({ children }) {
 
 
     async function recuperarSenha(email) {
-        setLoading(true);
+        /*setLoading(true);
         const [error, response] = await to(api.post('unauth/user/password/solicit',
             { email },
         ))
@@ -147,12 +151,12 @@ function AuthProvider({ children }) {
             setLoading(false);
             throw new Error("Erro ao enviar e-mail", error)
         }
-
-        setLoading(false);
+ 
+        setLoading(false);*/
     }
 
     async function codeSubmit(codigo) {
-        setLoading(true);
+        /*setLoading(true);
         const [error, response] = await to(api.post('unauth/user/password/confirm',
             { passwordResetCode: codigo },
         ))
@@ -162,22 +166,76 @@ function AuthProvider({ children }) {
             throw new Error("Erro ao enviar código", error)
         }
         setCodigo(codigo);
-        setLoading(false);
+        setLoading(false);*/
     }
 
     async function cadastrar(password, confirmPassword) {
-        setLoading(true);
-        const [error, response] = await to(api.post('unauth/user/password/new',
-            { password, passwordConfirmation: confirmPassword, passwordResetCode: codigo },
-        ))
-        if (error) {
-            console.log(error)
-            setLoading(false);
-            throw new Error("Erro ao enviar senhas", error)
+        /* setLoading(true);
+         const [error, response] = await to(api.post('unauth/user/password/new',
+             { password, passwordConfirmation: confirmPassword, passwordResetCode: codigo },
+         ))
+         if (error) {
+             console.log(error)
+             setLoading(false);
+             throw new Error("Erro ao enviar senhas", error)
+         }
+         setCodigo(null);
+         setLoading(false);
+         navigation.goBack();*/
+    }
+
+    async function deleteUser(idPlant) {
+        const [error, response] = await to(api.delete(`auth/plant/${idPlant}`, {
+            headers: {
+                'Authorization': `Bearer ${userToken}`
+            }
         }
-        setCodigo(null);
-        setLoading(false);
-        navigation.goBack();
+        ));
+        if (error) {
+            console.error('Erro ao deletar planta:', error);
+            setLoading(false);
+            return;
+        }
+        console.log(response.data);
+    }
+
+    async function patchUserName(name) {
+        const [error, response] = await to(api.patch(`auth/user/edit`, {
+            name
+        }, {
+            headers: {
+                'Authorization': `Bearer ${userToken}`
+            }
+        }));
+
+        if (error) {
+            console.error('Erro ao editar usuario:', error);
+            setLoading(false);
+            return;
+        }
+        setUserName(name);
+        console.log(response.data);
+    }
+
+    async function patchUserPassword(oldPassword, password, passwordConfirmation) {
+        const [error, response] = await to(api.patch(`auth/user/password`, {
+            oldPassword,
+            password,
+            passwordConfirmation
+        }, {
+            headers: {
+                'Authorization': `Bearer ${userToken}`
+            }
+        }));
+
+        if (error) {
+            console.error('Erro ao editar usuario:', error);
+            setLoading(false);
+            return false;
+        }
+
+        console.log(response.data);
+        return true;
     }
 
     async function addNewPlant(plantToken) {
@@ -217,6 +275,39 @@ function AuthProvider({ children }) {
         return response;
     }
 
+    async function deletePlant(idPlant) {
+        const [error, response] = await to(api.delete(`auth/plant/${idPlant}`, {
+            headers: {
+                'Authorization': `Bearer ${userToken}`
+            }
+        }
+        ));
+        if (error) {
+            console.error('Erro ao deletar planta:', error);
+            setLoading(false);
+            return;
+        }
+        console.log(response.data);
+    }
+
+    async function patchPlant(idPlant, name) {
+        const [error, response] = await to(api.patch(`auth/plant/${idPlant}`, {
+            name
+        }, {
+            headers: {
+                'Authorization': `Bearer ${userToken}`
+            }
+        }));
+
+        if (error) {
+            console.error('Erro ao editar planta:', error);
+            setLoading(false);
+            return;
+        }
+        console.log(response.data);
+    }
+
+
     async function listActivities() {
         const [error, response] = await to(api.get(`unauth/plant/activity/list`));
         if (error) {
@@ -254,7 +345,7 @@ function AuthProvider({ children }) {
         }
     }
 
-    async function listCare() {
+    async function listPlantCare() {
         const [error, response] = await to(api.get(`auth/user/care/list`, {
             headers: {
                 'Authorization': `Bearer ${userToken}`
@@ -264,24 +355,30 @@ function AuthProvider({ children }) {
             console.error('Erro ao buscar cuidados:', error);
             return;
         }
+        console.log(response.data);
         return response;
     }
 
-    async function changeNamePlant(namePlant) {
-        setLoading(true);
-        const [error, response] = await to(api.post('',
-            { namePlant },
-        ))
-        if (error) {
-            console.log(error)
-            setLoading(false);
-            throw new Error("Erro ao alterar nome", error)
+    async function deleteLembrete(idPlant, idCare) {
+        const [error, response] = await to(api.delete(`auth/plant/${idPlant}/care/${idCare}`, {
+            headers: {
+                'Authorization': `Bearer ${userToken}`
+            }
         }
-        setLoading(false);
+        ));
+        if (error) {
+            console.error('Erro ao deletar lembrete:', error);
+            setLoading(false);
+            return;
+        }
     }
 
     return (
-        <AuthContext.Provider value={{ signed: !!user, userName, userEmail, signUp, signOut, signIn, recuperarSenha, cadastrar, codeSubmit, addNewPlant, listPlants, listActivities, addLembrete, loading }}>
+        <AuthContext.Provider value={{
+            signed: !!user, userName, userEmail, loading,
+            signUp, signOut, signIn, patchUserName, patchUserPassword, recuperarSenha, cadastrar, codeSubmit, addNewPlant, listPlants,
+            deletePlant, patchPlant, listActivities, addLembrete, deleteLembrete, listPlantCare,
+        }}>
             {children}
         </AuthContext.Provider>
     )

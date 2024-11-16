@@ -1,74 +1,86 @@
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, TextInput, Modal, ActivityIndicator, } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, TextInput, Modal, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import React, { useContext, useState } from "react";
 import { AuthContext } from "../../contexts/auth";
-
+import ModalMessageBox from "../../components/ModalMessageBox/messageBoxUpdate";
+import { LinearGradient } from "expo-linear-gradient";
 
 export default function ConfigModalAlterarNome({ setVisible }) {
 
     const [userName, setUserName] = useState('');
-    const { changeNameUser, loading } = useContext(AuthContext);
+    const { patchUserName, loading } = useContext(AuthContext);
     const [message, setMessage] = useState(false);
 
-    async function handleChangeNamePlant() {
-        if (namePlant === "") {
+    async function handleEdit() {
+        if (userName === "") {
             alert("Por favor digite o nome!");
             return;
         }
-        changeUserName(userName);
-        setVisible(false);
+        patchUserName(userName)
+        setUserName("");
         setMessage(true);
-    }
+    };
 
     return (
         <SafeAreaView style={styles.modalContainer}>
-            <View style={styles.modalHeader}>
-                <TouchableOpacity onPress={() => setVisible(false)}>
-                    <Icon name="arrow-left" style={styles.iconVoltar} />
-                </TouchableOpacity>
-                <Text style={styles.modalTitle}>Alterar nome </Text>
-            </View>
-            <View style={{ padding: 15, justifyContent: 'center', alignItems: 'center', flex: 1 }}>
-                <View style={styles.modalExcluirContent}>
-                    <Text style={styles.modalExcluirText}>Atualizar nome</Text>
-                    <View>
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Nome"
-                            value={userName}
-                            onChangeText={(text) => setUserName(text)}
-                            placeholderTextColor="#3a4d39"
-                        ></TextInput>
-                    </View>
-                </View>
-                <View style={styles.buttonExcluirContainer}>
-                    <TouchableOpacity style={styles.buttonExcluir} onPress={() => { setMessage(true); }}>
-                        <Text style={styles.buttonExcluirText}>Salvar</Text>
+            <KeyboardAvoidingView
+                behavior={Platform.OS === "ios" ? "padding" : "height"}
+                style={{ flex: 1 }}
+            >
+                <View style={styles.modalHeader}>
+                    <TouchableOpacity onPress={() => setVisible(false)}>
+                        <Icon name="arrow-left" style={styles.iconVoltar} />
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.buttonExcluir} onPress={() => setVisible(false)}>
-                        <Text style={styles.buttonExcluirText}>Cancelar</Text>
-                    </TouchableOpacity>
+                    <Text style={styles.modalTitle}>Alterar Nome </Text>
                 </View>
+                <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+                    <LinearGradient
+                        style={{ padding: 20, justifyContent: 'center', alignItems: 'center', flex: 1 }}
+                        colors={['#ede0df', '#dfe8df', '#c3dbbd']}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                    >
+                        <View style={styles.modalAlterarContent}>
+                            <Icon name="account-edit" style={styles.icon} />
+                            <Text style={styles.modalAlterarText}>Digite um novo nome:</Text>
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Nome"
+                                value={userName}
+                                onChangeText={(text) => setUserName(text)}
+                                placeholderTextColor="#3a4d39"
+                            />
+                            <View style={styles.buttonAlterarContainer}>
+                                <TouchableOpacity
+                                    style={styles.buttonAlterar}
+                                    onPress={() => handleEdit()}
+                                >
+                                    {loading ? (
+                                        <ActivityIndicator size={50} color="#fff" />
+                                    ) : (
+                                        <Text style={styles.buttonAlterarText}>Salvar</Text>
+                                    )}
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                    style={styles.buttonAlterar}
+                                    onPress={() => setVisible(false)}
+                                >
+                                    <Text style={styles.buttonAlterarText}>Cancelar</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    </LinearGradient>
+                </ScrollView>
                 <Modal
                     animationType="slide"
                     transparent={true}
                     visible={message}
-                    onRequestClose={() => setMessage(false)}>
-                    <View style={styles.modalMessageContainer}>
-                        <View style={styles.modalMessageContent}>
-                            <Icon name="check-circle" style={styles.icon}></Icon>
-                            <Text style={styles.modalMessageText}>Informações atualizadas com sucesso</Text>
-                            <View style={styles.buttonMessageContainer}>
-                                <TouchableOpacity style={styles.buttonMessage} onPress={() => { setMessage(false); setVisible(false) }}>
-                                    <Text style={styles.buttonMessageText}>Ok</Text>
-                                </TouchableOpacity>
-                            </View>
-                        </View>
-                    </View>
+                >
+                    <ModalMessageBox setMessageVisible={() => { setMessage(false); setVisible(false); }} />
                 </Modal>
-            </View>
+            </KeyboardAvoidingView>
         </SafeAreaView>
-    )
+    );
 }
 
 const styles = StyleSheet.create({
@@ -78,13 +90,13 @@ const styles = StyleSheet.create({
     },
     iconVoltar: {
         fontSize: 30,
-        color: 'rgba(255,255,255,1)',
+        color: '#ffffff',
         marginLeft: 15,
     },
     modalTitle: {
         fontSize: 22,
         paddingHorizontal: 20,
-        color: 'rgba(255,255,255,1)',
+        color: '#ffffff',
         fontWeight: "bold",
         textAlign: "center"
     },
@@ -95,82 +107,61 @@ const styles = StyleSheet.create({
         justifyContent: "flex-start",
         height: 60,
     },
-    modalExcluirContent: {
-        width: '100%',
-        backgroundColor: '#afcca8',
-        borderRadius: 10,
-        padding: 20,
-        marginTop: 50,
-        alignItems: 'center',
-        justifyContent: "center",
-    },
-    modalExcluirText: {
-        fontSize: 25,
-        marginBottom: 20,
-        textAlign: 'center',
-    },
-    buttonExcluirContainer: {
+    buttonAlterarContainer: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         width: '100%',
-        marginTop: 50,
+        marginTop: 40,
     },
-    buttonExcluir: {
+    buttonAlterar: {
         flex: 1,
-        backgroundColor: '#3A4D39',
+        backgroundColor: '#3a4d39',
         padding: 10,
-        borderRadius: 5,
+        borderRadius: 10,
         marginHorizontal: 5,
         alignItems: 'center',
+        shadowColor: 'black',
+        elevation: 5,
     },
-    buttonExcluirText: {
+    buttonAlterarText: {
         color: 'white',
         fontWeight: 'bold',
         fontSize: 20,
     },
-
-    modalMessageContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#dfe8df'
-    },
-    modalMessageContent: {
+    modalAlterarContent: {
         width: '100%',
-        backgroundColor: '#dfe8df',
+        backgroundColor: 'rgba(242, 245, 242,.9)',
+        borderColor: 'rgba(242, 245, 242,.9)',
         borderRadius: 10,
         padding: 20,
-        marginTop: 50,
+        marginTop: 10,
         alignItems: 'center',
+        shadowColor: 'black',
+        elevation: 3,
     },
-    modalMessageText: {
-        fontSize: 30,
+    modalAlterarText: {
+        fontSize: 20,
         marginBottom: 20,
         textAlign: 'center',
-        fontWeight: "bold",
-    },
-    buttonMessageContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        width: '100%',
-    },
-    buttonMessage: {
-        flex: 1,
-        backgroundColor: '#3A4D39',
-        padding: 10,
-        borderRadius: 5,
-        marginHorizontal: 5,
-        alignItems: 'center',
-    },
-    buttonMessageText: {
-        color: 'white',
-        fontWeight: 'bold',
-        fontSize: 20,
+        color: "#496e47",
     },
     icon: {
-        fontSize: 180,
+        fontSize: 150,
         color: '#7ccaeb',
-        padding: 50
+        padding: 30
+    },
+    input: {
+        color: "#3a4d39",
+        height: 55,
+        fontSize: 20,
+        paddingLeft: 15,
+        borderBottomWidth: 3,
+        borderBottomColor: "#3a4d39",
+        backgroundColor: "white",
+        marginTop: 20,
+        borderRadius: 15,
+        width: 310,
+        margin: 5,
     },
 })
 

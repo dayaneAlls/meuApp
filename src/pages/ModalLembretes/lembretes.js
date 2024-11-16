@@ -1,6 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
-import api from "../../services/api";
-import to from "await-to-js";
+import React, { useState, useEffect, useContext, useRef } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Notifications from 'expo-notifications';
 import { format, addDays, startOfWeek } from 'date-fns';
@@ -8,24 +6,42 @@ import { pt } from 'date-fns/locale';
 import { Picker } from '@react-native-picker/picker';
 import { AuthContext } from "../../contexts/auth";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
-import { View, Text, StyleSheet, FlatList, SafeAreaView, TouchableOpacity, Modal, ScrollView, Switch, } from 'react-native';
+import { View, Text, StyleSheet, FlatList, SafeAreaView, TouchableOpacity, Modal, ScrollView, Switch, TextInput } from 'react-native';
 
 export default function ModalLembretes({ setVisible, selectedPlant }) {
 
     const [modalAdicionar, setModalAdicionar] = useState(false);
+    const [modalAddRegistro, setModalAddRegistro] = useState(false);
     const [diaSelecionado, setDiaSelecionado] = useState(null);
-    const [horaSelecionada, setHoraSelecionada] = useState('24');
-    const [minutoSelecionado, setMinutoSelecionado] = useState('00');
     const [frequencia, setFrequencia] = useState('');
     const { listActivities } = useContext(AuthContext);
-    const { listLembretes } = useContext(AuthContext);
-    const { addLembrete } = useContext(AuthContext);
-    // const [textoLembrete, setTextoLembrete] = useState("");
+    //const { listCare } = useContext(AuthContext);
+    //const { addLembrete } = useContext(AuthContext);
     const [activities, setActivities] = useState([]);
     const [atividade, setAtividade] = useState('');
+    const [notificationId, setNotificatioId] = useState([]);
+    const [horaSelecionada, setHoraSelecionada] = useState("00");
+    const [minutoSelecionado, setMinutoSelecionado] = useState("00");
 
-    const horas = Array.from({ length: 24 }, (_, i) => (i + 0).toString().padStart(2, '0'));
-    const minutos = Array.from({ length: 60 }, (_, i) => i.toString().padStart(2, '0'));
+    const [hora, setHora] = useState(() => {
+        const horaAtual = new Date().getHours(); // Obtém a hora atual
+        return String(horaAtual).padStart(2, "0"); // Formata para dois dígitos
+    });
+    const [minuto, setMinuto] = useState(() => {
+        const minutoAtual = new Date().getMinutes(); // Obtém o minuto atual
+        return String(minutoAtual).padStart(2, "0"); // Formata para dois dígitos
+    });
+    const [dia, setDia] = useState(() => {
+        const hoje = new Date().getDate(); // Pega o dia atual (número)
+        return String(hoje).padStart(2, "0"); // Retorna uma string formatada
+    });
+    const [mes, setMes] = useState(() => {
+        const mesAtual = new Date().getMonth() + 1; // Pega o mês atual (número)
+        return String(mesAtual).padStart(2, "0"); // Retorna uma string formatada
+    });
+
+    const horas = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, "0"));
+    const minutos = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, "0"));
 
     Notifications.setNotificationHandler({
         handleNotification: async () => ({
@@ -37,8 +53,14 @@ export default function ModalLembretes({ setVisible, selectedPlant }) {
 
     async function handleListActivities() {
         var response = await listActivities();
-        //console.log({ b: response.data.atividades });
         setActivities(response.data.atividades);
+    }
+
+    async function handleRegister() {
+
+        setDia(dia);
+        setMes(mes);
+        setModalAddRegistro(false);
     }
 
     useEffect(() => {
@@ -64,15 +86,15 @@ export default function ModalLembretes({ setVisible, selectedPlant }) {
                 console.error("Erro ao carregar notificações:", error);
             }
         };
+        if (!diaSelecionado) {
+            const hoje = new Date();
+            const diaAtualAbreviado = format(hoje, 'eee', { locale: pt })
+                .charAt(0)
+                .toUpperCase() + format(hoje, 'eee', { locale: pt }).slice(1, 3);
+            setDiaSelecionado(diaAtualAbreviado);
+        }
         carregarNotificacoes();
-    }, []);
-
-    useEffect(() => {
-        handleListActivities(); // Chama a função ao montar o componente
-    }, []);
-
-    useEffect(() => {
-        listLembretes(); // Chama a função ao montar o componente
+        handleListActivities();
     }, []);
 
     const agendarNotificacao = async () => {
@@ -87,7 +109,7 @@ export default function ModalLembretes({ setVisible, selectedPlant }) {
             const notificationId = await Notifications.scheduleNotificationAsync({
                 content: {
                     title: 'Hora de cuidar da sua planta! 🌿😊',
-                    body: atividade,
+                    body: atividade + (" " + selectedPlant.nome),
                 },
                 trigger,
             });
@@ -101,7 +123,7 @@ export default function ModalLembretes({ setVisible, selectedPlant }) {
                 ativa: true,
             };
 
-            addLembrete(selectedPlant._id, novaNotificacao);
+            //addLembrete(selectedPlant._id, novaNotificacao);
 
             // Recupera as notificações atuais
             const armazenadas = await AsyncStorage.getItem('notificacoes');
@@ -137,7 +159,6 @@ export default function ModalLembretes({ setVisible, selectedPlant }) {
 
     const getWeekday = (dia) => {
         const dias = { 'Dom': 1, 'Seg': 2, 'Ter': 3, 'Qua': 4, 'Qui': 5, 'Sex': 6, 'Sáb': 7 };
-        console.log("Dia no getWeekday:", dia);
         return dias[dia]; // Retorna o índice para ser usado pelo Notifications
     };
 
@@ -146,6 +167,7 @@ export default function ModalLembretes({ setVisible, selectedPlant }) {
     // Primeiro dia da semana (domingo)
     const inicioDaSemana = startOfWeek(hoje, { weekStartsOn: 1 });
     const dataAtual = format(hoje, 'dd MMMM, yyyy', { locale: pt });
+    const anoAtual = format(hoje, 'yyyy', { locale: pt });
 
     // Adiciona a data ao objeto de cada dia da semana
     const diasComDatas = diasDaSemana.map((dia, index) => {
@@ -155,6 +177,18 @@ export default function ModalLembretes({ setVisible, selectedPlant }) {
             data: format(dataDoDia, 'dd'), // Formata a data
         };
     });
+
+    const handleDiaChange = (text) => {
+        if (/^\d{0,2}$/.test(text) && (Number(text) >= 0 && Number(text) <= 31)) {
+            setDia(text);
+        }
+    };
+
+    const handleMesChange = (text) => {
+        if (/^\d{0,2}$/.test(text) && (Number(text) >= 0 && Number(text) <= 12)) {
+            setMes(text);
+        }
+    };
 
     // Função para excluir uma notificação agendada
     const excluirNotificacao = async (id) => {
@@ -193,43 +227,25 @@ export default function ModalLembretes({ setVisible, selectedPlant }) {
         }
     };
 
-    const markAsCompleted = async (item) => {
 
-        const updatedNotifications = notificacoes.map(notificacao =>
-            notificacao.id === item.id ? { ...notificacao, isCompleted: true } : notificacao
+    const renderItem = ({ item }) => {
+        const isSelected = diaSelecionado === item.dia;
+
+        return (
+            <TouchableOpacity
+                style={[styles.botaoDia, isSelected && styles.botaoSelecionado]}
+                onPress={() => setDiaSelecionado(item.dia)}
+            >
+                <Text style={[styles.textoBotao, isSelected && styles.textoSelecionado]}>
+                    {item.dia}{"\n"}{item.data}
+                </Text>
+            </TouchableOpacity>
         );
-        saveNotifications(updatedNotifications);
-
-        // if (item.isCompleted) {
-        //     return; // Impede múltiplas marcações como concluídas
-        // }
-        //  const updatedNotifications = notificacoes.map(notificacao =>
-        //      notificacao.id === item.id ? { ...notificacao, isCompleted: true } : notificacao
-        //  );
-        //  saveNotifications(updatedNotifications);
-
-        // // Dados que serão enviados ao backend
-        //  const data = {
-        //      id: item.id,
-        //     hora: item.hora,
-        //      data: item.data,
-        //     atividade: item.texto,
-        //      concluido: true,
-        //  };
     };
-
-    const renderItem = ({ item }) => (
-        <TouchableOpacity
-            style={styles.botaoDia}
-            onPress={() => { setDiaSelecionado(item.dia); }}
-        >
-            <Text style={styles.textoBotao}>{item.dia}{"\n"}{item.data}</Text>
-        </TouchableOpacity>
-    );
 
     const renderItem2 = ({ item }) => (
         <View style={{ flexDirection: "row", }}>
-            <View style={styles.itemContainer}>
+            <TouchableOpacity style={styles.itemContainer} onPress={() => { setModalAddRegistro(true); setNotificatioId(item) }}>
                 <Text style={{ width: "75%" }}>
                     <Text style={{ fontWeight: 'bold', fontSize: 22, color: "#3a6138" }}>{`${item.atividade}`}</Text>
                     <Text style={{ fontWeight: 'bold', fontStyle: 'italic', fontSize: 18, color: "#648c62" }}>{"\n"}{`${item.frequencia} às ${item.hora}:${item.minuto}`} </Text>
@@ -241,7 +257,7 @@ export default function ModalLembretes({ setVisible, selectedPlant }) {
                 <TouchableOpacity onPress={() => excluirNotificacao(item.id)}>
                     <Icon name="close-circle" style={{ color: "#db453d", fontSize: 35 }} />
                 </TouchableOpacity>
-            </View>
+            </TouchableOpacity>
         </View>
     );
 
@@ -300,20 +316,23 @@ export default function ModalLembretes({ setVisible, selectedPlant }) {
                     <View style={styles.modalCalendarContent}>
                         <View style={styles.modalCalendar}>
                             <Text style={styles.modalCalendarText}>Crie uma nova notificação</Text>
-                            <Text style={styles.textModalTitle2}>Hora de cuidar da sua planta! 🌿📲</Text>
-                            <Picker
-                                selectedValue={atividade}
-                                onValueChange={(itemValue) => setAtividade(itemValue)}
-                            >
-                                <Picker.Item label="Selecione um tipo de cuidado" value="" />
-                                {activities.map((activity) => (
-                                    <Picker.Item
-                                        key={activity._id} // Supondo que a API retorna {id, atividade}
-                                        label={activity.descricao}
-                                        value={activity.descricao}
-                                    />
-                                ))}
-                            </Picker>
+                            <Text style={styles.textModalTitle2}>Hora de cuidar da sua planta! 🌿😊</Text>
+                            <View style={styles.pickerSelect}>
+                                <Picker
+                                    style={{ color: "#f6fff5", width: "100%" }}
+                                    selectedValue={atividade}
+                                    onValueChange={(itemValue) => setAtividade(itemValue)}
+                                >
+                                    <Picker.Item style={{ fontSize: 16 }} label="Selecione um tipo de cuidado:" value="" />
+                                    {activities.map((activity) => (
+                                        <Picker.Item
+                                            key={activity._id}
+                                            label={activity.descricao}
+                                            value={activity.descricao}
+                                        />
+                                    ))}
+                                </Picker>
+                            </View>
                             <View style={styles.scrollContainer}>
                                 <ScrollView
                                     style={styles.scroll}
@@ -357,12 +376,12 @@ export default function ModalLembretes({ setVisible, selectedPlant }) {
                                 Horário selecionado: {horaSelecionada}:{minutoSelecionado}
                             </Text>
                             <View style={styles.pickerSelect}>
-                                <Text style={{ fontSize: 20, color: "#f6fff5", fontWeight: "bold", paddingHorizontal: 20, }}>Repetir:</Text>
                                 <Picker
                                     selectedValue={frequencia}
                                     onValueChange={(itemValue) => setFrequencia(itemValue)}
-                                    style={{ color: "#f6fff5", width: 190, }}
+                                    style={{ color: "#f6fff5", width: "100%" }}
                                 >
+                                    <Picker.Item style={{ fontSize: 20 }} label="Repetir:" value="" />
                                     <Picker.Item label="Hoje" value="Hoje" />
                                     <Picker.Item label="Diariamente" value="Diariamente" />
                                     <Picker.Item label="Semanalmente" value="Semanalmente" />
@@ -379,6 +398,95 @@ export default function ModalLembretes({ setVisible, selectedPlant }) {
                         </View>
                     </View>
                 </View>
+            </Modal>
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={modalAddRegistro}
+                onRequestClose={() => setModalAddRegistro(false)}
+            >
+                <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+                    <View style={styles.modalCalendarContainer}>
+                        <View style={{ flex: 10 }}></View>
+                        <View style={styles.modalCalendarContent}>
+                            <View style={{ backgroundColor: "#f6fff5", borderRadius: 20, marginHorizontal: 35, }}>
+                                <Text style={styles.modalCalendarText2}>Registre uma atividade</Text>
+                                <View style={styles.modalCalendar2}>
+                                    <Text style={styles.itemText2}> Atividade: {notificationId.atividade}</Text>
+                                    <View style={styles.scrollContainer2}>
+                                        <Text style={styles.itemText2}>Horário: </Text>
+                                        <ScrollView
+                                            style={styles.scroll2}
+                                            contentContainerStyle={styles.scrollContent}
+                                            showsVerticalScrollIndicator={false}
+                                            snapToInterval={50} // Ajuste conforme necessário
+                                            snapToAlignment="center"
+                                            decelerationRate="fast"
+                                            onMomentumScrollEnd={(event) => {
+                                                const index = Math.round(event.nativeEvent.contentOffset.y / 50);
+                                                setHora(horas[index]); // Atualiza a hora selecionada
+                                            }}
+                                        >
+                                            {horas.map((hora) => (
+                                                <View key={hora} style={styles.item2}>
+                                                    <Text style={styles.itemText2}>{hora}</Text>
+                                                </View>
+                                            ))}
+                                        </ScrollView>
+
+                                        <Text style={styles.itemText2}>:</Text>
+                                        <ScrollView
+
+                                            style={styles.scroll2}
+                                            contentContainerStyle={styles.scrollContent}
+                                            showsVerticalScrollIndicator={false}
+                                            snapToInterval={50} // Ajuste conforme necessário
+                                            snapToAlignment="center"
+                                            decelerationRate="fast"
+                                            onMomentumScrollEnd={(event) => {
+                                                const index = Math.round(event.nativeEvent.contentOffset.y / 50);
+                                                setMinuto(minutos[index]); // Atualiza o minuto selecionado
+                                            }}
+                                        >
+                                            {minutos.map((minuto) => (
+                                                <View key={minuto} style={styles.item2}>
+                                                    <Text style={styles.itemText2}>{minuto}</Text>
+                                                </View>
+                                            ))}
+                                        </ScrollView>
+                                    </View>
+                                    <View style={styles.scrollContainer2}>
+                                        <Text style={styles.itemText2}>Data: </Text>
+                                        <TextInput
+                                            style={styles.itemText2}
+                                            value={dia}
+                                            onChangeText={handleDiaChange}
+                                            maxLength={2}
+                                            keyboardType="number-pad"
+                                        ></TextInput>
+                                        <Text style={styles.itemText2}>/</Text>
+                                        <TextInput
+                                            style={styles.itemText2}
+                                            value={mes}
+                                            onChangeText={handleMesChange}
+                                            maxLength={2}
+                                            keyboardType="number-pad"
+                                        ></TextInput>
+                                        <Text style={styles.itemText2}>/ {anoAtual}</Text>
+                                    </View>
+                                </View>
+                            </View>
+                            <View style={styles.buttonCalendarContainer}>
+                                <TouchableOpacity style={styles.buttonCalendar} onPress={() => handleRegister()}>
+                                    <Text style={styles.buttonCalendarText}>Salvar</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity style={styles.buttonCalendar} onPress={() => { setModalAddRegistro(false) }}>
+                                    <Text style={styles.buttonCalendarText}>Cancelar</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    </View>
+                </ScrollView>
             </Modal>
         </View>
     )
@@ -437,6 +545,12 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#a3d1a1',
     },
+    botaoSelecionado: {
+        backgroundColor: '#7ac47d', // Cor do botão quando selecionado
+    },
+    textoSelecionado: {
+        color: '#ffff', // Cor do texto quando selecionado
+    },
     textoBotao: {
         fontSize: 20,
         color: '#587f56',
@@ -459,7 +573,18 @@ const styles = StyleSheet.create({
         fontWeight: "bold",
         color: "#f6fff5",
         backgroundColor: "#587f56",
-        padding: 25,
+        padding: 20,
+        borderTopRightRadius: 20,
+        borderTopLeftRadius: 20,
+    },
+    modalCalendarText2: {
+        fontSize: 23,
+        marginBottom: 15,
+        textAlign: 'center',
+        fontWeight: "bold",
+        color: "#f6fff5",
+        backgroundColor: "#587f56",
+        padding: 10,
         borderTopRightRadius: 20,
         borderTopLeftRadius: 20,
     },
@@ -472,6 +597,11 @@ const styles = StyleSheet.create({
         backgroundColor: "#f6fff5",
         borderRadius: 20,
         marginHorizontal: 35,
+    },
+    modalCalendar2: {
+        backgroundColor: "#f6fff5",
+        borderRadius: 20,
+        alignItems: "center"
     },
     buttonCalendar: {
         alignItems: 'center',
@@ -501,26 +631,23 @@ const styles = StyleSheet.create({
         borderBottomWidth: 4,
         borderColor: "#6f8c6d",
     },
-    textInput: {
-        fontSize: 18,
-        fontWeight: "bold",
-        color: "#587f56",
-        marginLeft: 20,
-        marginRight: 20,
-        marginBottom: 10,
-        paddingBottom: 5,
-        paddingLeft: 10,
-        borderBottomWidth: 4,
-        borderColor: "#6f8c6d",
-    },
     scrollContainer: {
         flexDirection: "row",
         alignItems: 'center',
         justifyContent: 'center',
         marginRight: 25,
         marginLeft: 25,
-        marginTop: 40,
-        marginBottom: 40,
+        marginTop: 15,
+        marginBottom: 15,
+    },
+    scrollContainer2: {
+        flexDirection: "row",
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: 25,
+        marginLeft: 25,
+        marginTop: 10,
+        marginBottom: 10,
     },
     scroll: {
         height: 80,  // Altura fixa para cada ScrollView
@@ -528,25 +655,34 @@ const styles = StyleSheet.create({
         backgroundColor: "#dfede2",
         borderRadius: 10,
     },
+    scroll2: {
+        height: 50,  // Altura fixa para cada ScrollView
+        marginHorizontal: 10,
+        backgroundColor: "#dfede2",
+        borderRadius: 10,
+    },
     scrollContent: {
         alignItems: 'center',
         paddingVertical: 0, // Para centralizar os itens corretamente
-
     },
     item: {
         height: 80,  // Alinhado com snapToInterval
         justifyContent: 'center',
         alignItems: 'center',
     },
+    item2: {
+        height: 50,  // Alinhado com snapToInterval
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
     itemText: {
         fontSize: 60,
     },
-    label: {
-        fontSize: 18,
-        marginBottom: 10,
+    itemText2: {
+        fontSize: 25,
+        fontWeight: "bold",
     },
     pickerSelect: {
-        color: "#f6fff5",
         backgroundColor: "#587f56",
         borderRadius: 25,
         flexDirection: "row",
@@ -564,7 +700,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
         padding: 13,
-        backgroundColor: '#aed1be',
+        backgroundColor: '#bee6be',
         marginBottom: 15,
         paddingLeft: 15,
         borderRadius: 15,
@@ -589,7 +725,7 @@ const styles = StyleSheet.create({
         marginHorizontal: 10,
         marginTop: 10,
         marginBottom: 10,
-        height: "56%",
+        height: "58%",
         backgroundColor: "#f5faf5",
     },
     ViewCalendar: {
@@ -598,13 +734,5 @@ const styles = StyleSheet.create({
         margin: 10,
         borderRadius: 20,
         backgroundColor: "#f5faf5",
-    },
-    containerCheck: {
-        alignItems: 'center',
-        justifyContent: "center",
-        borderRadius: 10,
-        marginLeft: 8,
-        width: "13%",
-        height: "83%"
     },
 })

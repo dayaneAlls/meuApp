@@ -166,8 +166,8 @@ const styles = StyleSheet.create({
   },
   input: {
     color: "white",
-    height: 40,
-    fontSize: 20,
+    height: 45,
+    fontSize: 18,
     paddingLeft: 15,
     borderBottomWidth: 1.5,
     borderColor: "rgba(255,255,255,1)",

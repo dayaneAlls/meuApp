@@ -2,26 +2,28 @@ import React, { useState, useEffect, useContext } from "react";
 import api from "../../services/api";
 import to from "await-to-js";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
-import { View, Text, StyleSheet, FlatList, SafeAreaView, Image, TouchableOpacity, Modal, ImageBackground, TextInput, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, FlatList, SafeAreaView, Image, TouchableOpacity, Modal, TextInput, ScrollView } from 'react-native';
 import Header from '../../components/Header'
 import ModalLembretes from "../ModalLembretes/lembretes";
 import ModalHistorico from "../ModalHistorico/historico";
 import { AuthContext } from "../../contexts/auth";
 import { useNavigation } from "@react-navigation/native";
+import ModalMessageBox from "../../components/ModalMessageBox/messageBoxUpdate";
 
 export default function MinhasPlantas() {
 
     const navigation = useNavigation();
+    const { listPlants, patchPlant, deletePlant } = useContext(AuthContext);
     const [plantList, setPlantList] = useState([]);
-    const { listPlants, changeNamePlant } = useContext(AuthContext);
     const [plantInfo, setPlantInfo] = useState(null);
     const [selectedPlant, setSelectedPlant] = useState(null);
     const [modalCuidados, setModalCuidados] = useState(false);
     const [modalLembrete, setModalLembrete] = useState(false);
     const [modalHistorico, setModalHistorico] = useState(false);
-    const [confirmExcluir, setConfirmExcluir] = useState(false);
+    const [confirmExcluir, setConfirmExcluir] = useState(false, null);
     const [namePlant, setNamePlant] = useState("");
     const [modalAlterarNomePlanta, setModalAlterarNomePlanta] = useState(false);
+    const [message, setMessage] = useState(false);
 
     async function fetchPlantInfo(plant_access_token) {
         // console.log({ plant_access_token });
@@ -36,17 +38,7 @@ export default function MinhasPlantas() {
 
     async function handleList() {
         var response = await listPlants();
-        //console.log({ b: response.data.list });
         setPlantList(response.data.list);
-    }
-
-    async function handleChangeNamePlant() {
-        if (namePlant === "") {
-            alert("Por favor digite o nome!");
-            return;
-        }
-        changeNamePlant(namePlant);
-        setNamePlant("");
     }
 
     const handleCancel = () => {
@@ -58,9 +50,25 @@ export default function MinhasPlantas() {
         handleList();
     }, []);
 
-    const handleDelete = (index) => {
-        const updatedList = plantList.filter((_, i) => i !== index);
-        setPlantList(updatedList);
+    async function handleDelete() {
+        deletePlant(selectedPlant._id)
+        handleList();
+        setConfirmExcluir(false);
+        setSelectedPlant(null);
+        setMessage(true);
+    };
+
+    async function handleEdit() {
+        if (namePlant === "") {
+            alert("Por favor digite o nome!");
+            return;
+        }
+        patchPlant(selectedPlant._id, namePlant)
+        handleList();
+        setModalAlterarNomePlanta(false);
+        setSelectedPlant(null);
+        setMessage(true);
+        setNamePlant("")
     };
 
     const renderItem = ({ item, index }) => (
@@ -69,12 +77,18 @@ export default function MinhasPlantas() {
                 <Image source={{ uri: item.url_imagem }} style={styles.cardImage} />
                 <Text style={styles.cardText}>{item.nome}</Text>
                 <TouchableOpacity
-                    onPress={() => setConfirmExcluir(true)} // Chama a função handleDelete passando o index do item
+                    onPress={() => {
+                        setConfirmExcluir(true);
+                        setSelectedPlant(item);
+                    }}
                 >
                     <Icon name="trash-can-outline" style={[styles.iconPlace, { left: 100, color: "#cc544e" }]} />
                 </TouchableOpacity>
                 <TouchableOpacity
-                    onPress={() => setModalAlterarNomePlanta(true)} // Chama a função handleDelete passando o index do item
+                    onPress={() => {
+                        setModalAlterarNomePlanta(true);
+                        setSelectedPlant(item);
+                    }}
                 >
                     <Icon name="square-edit-outline" style={[styles.iconPlace, { left: 60, color: "#659e5f" }]} />
                 </TouchableOpacity>
@@ -85,170 +99,153 @@ export default function MinhasPlantas() {
     return (
         <>
             <Header title='Minhas Plantas'></Header>
-            <SafeAreaView >
-                <ImageBackground
-                    //source={require("../../img/fundocasa.jpg")}
-                    //source={require("../../img/fundoMinhasPlantas.png")}
-                    style={styles.imageBackground}
-                    imageStyle={{ opacity: 0.3 }}
-                >
-                    <View style={styles.container}>
-                        <View style={{ marginBottom: 20, height: "96%", justifyContent: "center" }}>
-                            <FlatList
-                                data={plantList}
-                                keyExtractor={(item, index) => index}
-                                renderItem={renderItem}
-                                ListEmptyComponent={<Text style={styles.textEmptyList}>
-                                    Você ainda não tem plantas adicionadas!
-                                    {"\n"}Adicione plantas à sua lista de cuidados clicando no botão "Adicionar"</Text>}
-                            />
-                            <View style={{ borderColor: "#a3d1a1", justifyContent: "center", alignItems: "center" }}>
-                                < TouchableOpacity style={styles.buttonAddLembrete} onPress={() => navigation.navigate("Pesquisar Plantas")}>
-                                    <Icon name="plus" style={{ fontSize: 40, color: "#2a3b29" }} />
+            <SafeAreaView style={styles.container}>
+                <View style={{ marginBottom: 20, height: "96%", justifyContent: "center" }}>
+                    <FlatList
+                        data={plantList}
+                        keyExtractor={(item, index) => index}
+                        renderItem={renderItem}
+                        ListEmptyComponent={<Text style={styles.textEmptyList}>
+                            Você ainda não tem plantas adicionadas!
+                            {"\n"}Adicione plantas à sua lista de cuidados clicando no botão "Adicionar"</Text>}
+                    />
+                    <View style={{ borderColor: "#a3d1a1", justifyContent: "center", alignItems: "center" }}>
+                        < TouchableOpacity style={styles.buttonAddLembrete} onPress={() => navigation.navigate("Pesquisar Plantas")}>
+                            <Icon name="plus" style={{ fontSize: 40, color: "#2a3b29" }} />
+                        </TouchableOpacity>
+                        <Text style={{ marginBottom: 10 }}>Adicionar</Text>
+                    </View>
+                </View>
+                <Modal
+                    animationType="slide"
+                    transparent={true}
+                    visible={confirmExcluir}
+                    onRequestClose={() => setConfirmExcluir(false)}>
+                    <View style={styles.modalExcluirContainer}>
+                        <View style={styles.modalExcluirContent}>
+                            <Text style={styles.modalExcluirText}>Você tem certeza que deseja excluir essa planta da sua lista de plantas?</Text>
+                            <View style={styles.buttonExcluirContainer}>
+                                <TouchableOpacity style={styles.buttonExcluir} onPress={() => handleDelete()}>
+                                    <Text style={styles.buttonExcluirText}>Excluir</Text>
                                 </TouchableOpacity>
-                                <Text style={{ marginBottom: 10 }}>Adicionar</Text>
+                                <TouchableOpacity style={styles.buttonExcluir} onPress={() => setConfirmExcluir(false)}>
+                                    <Text style={styles.buttonExcluirText}>Cancelar</Text>
+                                </TouchableOpacity>
                             </View>
                         </View>
-                        <Modal
-                            animationType="slide"
-                            transparent={true}
-                            visible={confirmExcluir}
-                            onRequestClose={() => setConfirmExcluir(false)}>
-                            <View style={styles.modalExcluirContainer}>
-                                <View style={styles.modalExcluirContent}>
-                                    <Text style={styles.modalExcluirText}>Você tem certeza que deseja excluir essa planta da sua lista de plantas?</Text>
-                                    <View style={styles.buttonExcluirContainer}>
-                                        <TouchableOpacity style={styles.buttonExcluir} onPress={() => handleDelete(index)}>
-                                            <Text style={styles.buttonExcluirText}>Excluir</Text>
-                                        </TouchableOpacity>
-                                        <TouchableOpacity style={styles.buttonExcluir} onPress={() => setConfirmExcluir(false)}>
-                                            <Text style={styles.buttonExcluirText}>Cancelar</Text>
-                                        </TouchableOpacity>
+                    </View>
+                </Modal>
+                <Modal
+                    animationType="slide"
+                    transparent={true}
+                    visible={modalAlterarNomePlanta}
+                    onRequestClose={() => setModalAlterarNomePlanta(false)}>
+                    <View style={styles.modalExcluirContainer}>
+                        <View style={styles.modalExcluirContent}>
+                            <Text style={styles.modalExcluirText}>Insira o novo nome da sua planta</Text>
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Nome"
+                                value={namePlant}
+                                onChangeText={(text) => setNamePlant(text)}
+                                placeholderTextColor="#abc7a9"
+                                maxLength={25}
+                            ></TextInput>
+                            <View style={styles.buttonExcluirContainer}>
+                                <TouchableOpacity style={styles.buttonExcluir} onPress={() => handleEdit()}>
+                                    <Text style={styles.buttonExcluirText}>Alterar</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity style={styles.buttonExcluir} onPress={handleCancel}>
+                                    <Text style={styles.buttonExcluirText}>Cancelar</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    </View>
+                </Modal>
+                <Modal
+                    animationType="slide"
+                    transparent={true}
+                    visible={message}
+                >
+                    <ModalMessageBox setMessageVisible={() => { setMessage(false); setModalAlterarNomePlanta(false); }} />
+                </Modal>
+                {modalCuidados && selectedPlant && plantInfo && (
+                    <Modal
+                        animationType="slide"
+                        transparent={true}
+                        visible={modalCuidados}
+                        onRequestClose={() => setModalCuidados(false)}
+                    >
+                        <View style={styles.modalHeader}>
+                            <TouchableOpacity onPress={() => setModalCuidados(false)}>
+                                <Icon name="arrow-left" style={styles.iconVoltar} />
+                            </TouchableOpacity>
+                            <Text style={styles.modalTitle}>Cuidados Minhas Plantas</Text>
+                        </View>
+                        <ScrollView style={styles.modalContainer}>
+                            <View style={{ padding: 20 }}>
+                                <View style={{ justifyContent: "flex-start", alignItems: "center" }}>
+                                    <Image
+                                        source={{ uri: selectedPlant.url_imagem }}
+                                        style={styles.modalImage}
+                                    />
+                                    <Text style={styles.textNamePlant}>{plantInfo.name}</Text>
+                                </View>
+                                <View style={styles.viewDetails}>
+                                    <View style={styles.viewDescricao}>
+                                        <Text style={styles.textDetailsPlant}>
+                                            <Text style={{ fontWeight: 'bold' }}>Nome comum:</Text> {plantInfo.common_names}
+                                            <Text style={{ fontWeight: 'bold' }}>{"\n"}Descrição:</Text> {plantInfo.description.value}</Text>
+                                    </View>
+                                    <View style={[styles.viewDetails2, { flexWrap: 'wrap', flexDirection: 'row' }]}>
+                                        <View style={styles.viewDescricao2}>
+                                            <Icon name="sprout" size={35} color="green" style={{ paddingRight: 15 }} />
+                                            <Text style={styles.textDetailsPlant}>
+                                                <Text style={{ fontWeight: 'bold' }}>Comestível:</Text>
+                                                {"\n"}{plantInfo.edible_parts}
+                                            </Text>
+                                        </View>
+                                        <View style={styles.viewDescricao2}>
+                                            <Icon name="water-check" size={40} color="#51a9e0" style={{ paddingRight: 10 }} />
+                                            <Text style={styles.textDetailsPlant}>
+                                                <Text style={{ fontWeight: 'bold' }}>Rega:</Text>
+                                                {"\n"}{plantInfo.watering.max}
+                                            </Text>
+                                        </View>
                                     </View>
                                 </View>
                             </View>
-                        </Modal>
-                        <Modal
-                            animationType="slide"
-                            transparent={true}
-                            visible={modalAlterarNomePlanta}
-                            onRequestClose={() => setModalAlterarNomePlanta(false)}>
-                            <View style={styles.modalExcluirContainer}>
-                                <View style={styles.modalExcluirContent}>
-                                    <Text style={styles.modalExcluirText}>Insira o novo nome da sua planta</Text>
-                                    <TextInput
-                                        style={styles.input}
-                                        placeholder="Nome"
-                                        value={namePlant}
-                                        onChangeText={(text) => setNamePlant(text)}
-                                        placeholderTextColor="#abc7a9"
-                                        maxLength={25}
-                                    ></TextInput>
-                                    <View style={styles.buttonExcluirContainer}>
-                                        <TouchableOpacity style={styles.buttonExcluir} onPress={() => handleChangeNamePlant(index)}>
-                                            <Text style={styles.buttonExcluirText}>Alterar</Text>
-                                        </TouchableOpacity>
-                                        <TouchableOpacity style={styles.buttonExcluir} onPress={handleCancel}>
-                                            <Text style={styles.buttonExcluirText}>Cancelar</Text>
-                                        </TouchableOpacity>
-                                    </View>
+                            <View style={styles.modalBottons}>
+                                <View style={styles.viewButtons}>
+                                    <TouchableOpacity style={styles.buttons} onPress={() => { setModalCuidados(false); setModalLembrete(true); }}>
+                                        <Icon name="bell-ring" size={40} color="#f6fff5" />
+                                    </TouchableOpacity>
+                                    <Text style={styles.textAddPlant}>Lembretes</Text>
+                                </View>
+                                <View style={styles.viewButtons}>
+                                    <TouchableOpacity style={styles.buttons} onPress={() => { setModalCuidados(false); setModalHistorico(true); }}>
+                                        <Icon name="clipboard-text-clock-outline" size={40} color="#f6fff5" />
+                                    </TouchableOpacity>
+                                    <Text style={styles.textAddPlant}>Histórico</Text>
                                 </View>
                             </View>
-                        </Modal>
-                        {modalCuidados && selectedPlant && plantInfo && (
-                            <Modal
-                                animationType="slide"
-                                transparent={true}
-                                visible={modalCuidados}
-                                onRequestClose={() => setModalCuidados(false)}
-                            >
-                                <ScrollView style={styles.modalContainer}>
-                                    <View style={styles.modalHeader}>
-                                        <TouchableOpacity onPress={() => setModalCuidados(false)}>
-                                            <Icon name="arrow-left" style={styles.iconVoltar} />
-                                        </TouchableOpacity>
-                                        <Text style={styles.modalTitle}>Cuidados Minhas Plantas</Text>
-                                    </View>
-                                    <View style={{ padding: 20 }}>
-                                        <View style={{ justifyContent: "flex-start", alignItems: "center" }}>
-                                            <Image
-                                                source={{ uri: selectedPlant.url_imagem }}
-                                                style={styles.modalImage}
-                                            />
-                                            <Text style={styles.textNamePlant}>{plantInfo.name}</Text>
-                                        </View>
-                                        <View style={styles.viewDetails}>
-                                            <View style={styles.viewDescricao}>
-                                                <Text numberOfLines={7} style={styles.textDetailsPlant}>
-                                                    <Text style={{ fontWeight: 'bold' }}>Nome comum:</Text> {plantInfo.common_names}
-                                                    <Text style={{ fontWeight: 'bold' }}>{"\n"}Descrição:</Text> {plantInfo.description.value}</Text>
-                                            </View>
-                                            <View style={[styles.viewDetails2, { flexWrap: 'wrap', flexDirection: 'row' }]}>
-                                                <View style={styles.viewDescricao2}>
-                                                    <Icon name="sprout" size={35} color="green" style={{ paddingRight: 15 }} />
-                                                    <Text style={styles.textDetailsPlant}>
-                                                        <Text style={{ fontWeight: 'bold' }}>Comestível:</Text>
-                                                        {"\n"}{plantInfo.edible_parts}
-                                                    </Text>
-                                                </View>
-                                                <View style={styles.viewDescricao2}>
-                                                    <Icon name="seed" size={40} color="#7a4526" style={{ paddingRight: 10 }} />
-                                                    <Text style={styles.textDetailsPlant}>
-                                                        <Text style={{ fontWeight: 'bold' }}>Cultivo:</Text>
-                                                        {"\n"}{plantInfo.propagation_methods}
-                                                    </Text>
-                                                </View>
-                                                <View style={styles.viewDescricao2}>
-                                                    <Icon name="water-check" size={40} color="#51a9e0" style={{ paddingRight: 10 }} />
-                                                    <Text style={styles.textDetailsPlant}>
-                                                        <Text style={{ fontWeight: 'bold' }}>Rega:</Text>
-                                                        {"\n"}{plantInfo.watering.max}
-                                                    </Text>
-                                                </View>
-                                                <View style={styles.viewDescricao2}>
-                                                    <Icon name="white-balance-sunny" size={40} color="#f5f125" style={{ paddingRight: 10 }} />
-                                                    <Text style={styles.textDetailsPlant}>
-                                                        <Text style={{ fontWeight: 'bold' }}>Iluminação:</Text>
-                                                        {"\n"}{plantInfo.Iluminacao}
-                                                    </Text>
-                                                </View>
-                                            </View>
-                                        </View>
-                                    </View>
-                                    <View style={styles.modalBottons}>
-                                        <View style={styles.viewButtons}>
-                                            <TouchableOpacity style={styles.buttons} onPress={() => { setModalCuidados(false); setModalLembrete(true); }}>
-                                                <Icon name="bell-ring" size={45} color="#f6fff5" />
-                                            </TouchableOpacity>
-                                            <Text style={styles.textAddPlant}>Lembretes</Text>
-                                        </View>
-                                        <View style={styles.viewButtons}>
-                                            <TouchableOpacity style={styles.buttons} onPress={() => { setModalCuidados(false); setModalHistorico(true); }}>
-                                                <Icon name="clipboard-text-clock-outline" size={45} color="#f6fff5" />
-                                            </TouchableOpacity>
-                                            <Text style={styles.textAddPlant}>Histórico</Text>
-                                        </View>
-                                    </View>
-                                </ScrollView>
-                            </Modal>
-                        )}
-                        <Modal
-                            animationType="slide"
-                            transparent={true}
-                            visible={modalLembrete}
-
-                        >
-                            <ModalLembretes selectedPlant={selectedPlant} setVisible={() => { setModalCuidados(true); setModalLembrete(false); }}></ModalLembretes>
-                        </Modal>
-                        <Modal
-                            animationType="slide"
-                            transparent={true}
-                            visible={modalHistorico}
-                        >
-                            <ModalHistorico setVisible={() => { setModalCuidados(true); setModalHistorico(false); }}></ModalHistorico>
-                        </Modal>
-                    </View >
-                </ImageBackground >
+                        </ScrollView>
+                    </Modal>
+                )}
+                <Modal
+                    animationType="slide"
+                    transparent={true}
+                    visible={modalLembrete}
+                >
+                    <ModalLembretes selectedPlant={selectedPlant} setVisible={() => { setModalCuidados(true); setModalLembrete(false); }}></ModalLembretes>
+                </Modal>
+                <Modal
+                    animationType="slide"
+                    transparent={true}
+                    visible={modalHistorico}
+                >
+                    <ModalHistorico setVisible={() => { setModalCuidados(true); setModalHistorico(false); }}></ModalHistorico>
+                </Modal>
             </SafeAreaView >
         </>
     )
@@ -318,10 +315,10 @@ const styles = StyleSheet.create({
         borderWidth: 3,
         backgroundColor: '#587f56',
         borderColor: "#587f56",
-        marginTop: 10,
+        marginTop: 5,
         shadowColor: 'black',
-        elevation: 5,
-        marginBottom: 5,
+        elevation: 3,
+        marginBottom: 2,
         marginLeft: 10,
     },
     viewDetails: {
@@ -355,13 +352,11 @@ const styles = StyleSheet.create({
         borderRadius: 20,
         padding: 20,
         justifyContent: 'space-between', // Espaça o texto e o ícone
-        alignItems: 'center',
         flexDirection: 'row',
     },
     viewDescricao2: {
         backgroundColor: 'white',
         marginTop: 5,
-        marginBottom: 5,
         marginHorizontal: 5,
         borderRadius: 20,
         padding: 10,
@@ -369,7 +364,6 @@ const styles = StyleSheet.create({
         alignItems: "center",
         flexDirection: 'row',
         width: "47%",
-        height: "50%",
         borderWidth: 4,
         borderColor: "#b5d4b4",
     },
@@ -379,7 +373,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     viewButtons: {
-        marginTop: 5,
         marginHorizontal: 10,
         justifyContent: "center",
         alignItems: "center",

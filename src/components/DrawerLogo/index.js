@@ -1,18 +1,19 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import { Text, StyleSheet, View, Image, TouchableOpacity, Modal } from "react-native";
 import { DrawerItemList, DrawerContentScrollView, DrawerItem } from "@react-navigation/drawer";
 import Icon from 'react-native-vector-icons/MaterialIcons';
-
 import { AuthContext } from "../../contexts/auth";
+import { useAvatar } from '../../contextAvatar/avatarContext';
 
 export default function DrawerLog(props) {
     const { signOut, userName } = useContext(AuthContext);
     const [confirmSair, setConfirmSair] = useState(false);
+    const { avatar } = useAvatar();
 
     return (
         <DrawerContentScrollView {...props}>
             <View style={styles.container}>
-                <Image source={require('../../img/avatares3/5.png')} style={styles.avatar}></Image>
+                {avatar && <Image source={avatar} style={styles.avatar}></Image>}
                 <Text style={{ color: '#f0f2ff', fontSize: 20, paddingTop: 20, fontWeight: 'bold' }}>Bem-vindo(a)!</Text>
                 <Text style={{ color: '#f0f2ff', fontSize: 30, fontWeight: 'bold', marginBottom: 30 }}>{userName}</Text>
             </View>
