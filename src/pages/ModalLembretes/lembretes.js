@@ -14,9 +14,7 @@ export default function ModalLembretes({ setVisible, selectedPlant }) {
     const [modalAddRegistro, setModalAddRegistro] = useState(false);
     const [diaSelecionado, setDiaSelecionado] = useState(null);
     const [frequencia, setFrequencia] = useState('');
-    const { listActivities } = useContext(AuthContext);
-    //const { listCare } = useContext(AuthContext);
-    //const { addLembrete } = useContext(AuthContext);
+    const { listActivities, deleteLembrete, listCaresByPlant, addLembrete } = useContext(AuthContext);
     const [activities, setActivities] = useState([]);
     const [atividade, setAtividade] = useState('');
     const [notificationId, setNotificatioId] = useState([]);
@@ -75,17 +73,37 @@ export default function ModalLembretes({ setVisible, selectedPlant }) {
 
     const [notificacoes, setNotificacoes] = useState([]);
 
-    // Recupera as notificações agendadas ao montar o componente
     useEffect(() => {
         const carregarNotificacoes = async () => {
             try {
-                const armazenadas = await AsyncStorage.getItem('notificacoes');
-                const notificacoes = armazenadas ? JSON.parse(armazenadas) : [];
-                setNotificacoes(notificacoes);
+                // Chama a função que busca os dados do backend
+                const response = await listCaresByPlant(selectedPlant._id);
+    
+                // Verifica se os dados existem e acessa a propriedade correta
+                if (response && response.data && Array.isArray(response.data.careList)) {
+                    const notificacoesBackend = response.data.careList.map(cuidado => ({
+                        id: cuidado.id, // ID específico da notificação
+                        _id: cuidado._id, // Popula o _id do cuidado
+                        hora: cuidado.hora,
+                        minuto: cuidado.minuto,
+                        frequencia: cuidado.frequencia,
+                        dia: cuidado.dia,
+                        atividade: cuidado.atividade,
+                        plantaId: cuidado.planta_id,
+                        ativa: cuidado.ativa
+                    }));
+    
+                    // Atualiza as notificações no estado
+                    setNotificacoes(notificacoesBackend);
+                } else {
+                    console.warn('Nenhuma notificação encontrada para a planta selecionada.');
+                }
             } catch (error) {
                 console.error("Erro ao carregar notificações:", error);
             }
         };
+    
+        // Configura o dia selecionado se não estiver definido
         if (!diaSelecionado) {
             const hoje = new Date();
             const diaAtualAbreviado = format(hoje, 'eee', { locale: pt })
@@ -93,10 +111,11 @@ export default function ModalLembretes({ setVisible, selectedPlant }) {
                 .toUpperCase() + format(hoje, 'eee', { locale: pt }).slice(1, 3);
             setDiaSelecionado(diaAtualAbreviado);
         }
+    
         carregarNotificacoes();
         handleListActivities();
-    }, []);
-
+    }, [selectedPlant._id, diaSelecionado]); // Adiciona dependências relevantes
+    
     const agendarNotificacao = async () => {
         const trigger = {
             hour: parseInt(horaSelecionada),
@@ -123,7 +142,7 @@ export default function ModalLembretes({ setVisible, selectedPlant }) {
                 ativa: true,
             };
 
-            //addLembrete(selectedPlant._id, novaNotificacao);
+            addLembrete(selectedPlant._id, novaNotificacao);
 
             // Recupera as notificações atuais
             const armazenadas = await AsyncStorage.getItem('notificacoes');
@@ -137,7 +156,6 @@ export default function ModalLembretes({ setVisible, selectedPlant }) {
 
             // Confirmação do conteúdo salvo
             const confirmacao = await AsyncStorage.getItem('notificacoes');
-            console.log("Notificações salvas:", JSON.parse(confirmacao));
 
             setNotificacoes(notificacoes);
             setModalAdicionar(false);
@@ -191,10 +209,25 @@ export default function ModalLembretes({ setVisible, selectedPlant }) {
     };
 
     // Função para excluir uma notificação agendada
-    const excluirNotificacao = async (id) => {
+    const excluirNotificacao = async (id) => { 
         try {
+            console.log(id);
+            // Remover lembrete associado (ajustar conforme necessário)
+            deleteLembrete(id, selectedPlant._id);
+    
+            // Cancelar notificação agendada
             await Notifications.cancelScheduledNotificationAsync(id);
-            setNotificacoes(prev => prev.filter(notificacao => notificacao.id !== id));
+    
+            // Atualizar a lista de notificações em estado e em armazenamento
+            setNotificacoes(prev => {
+                const notificacoesAtualizadas = prev.filter(notificacao => notificacao.id !== id);
+                
+                // Atualizar AsyncStorage com a lista atualizada
+                AsyncStorage.setItem('notificacoes', JSON.stringify(notificacoesAtualizadas))
+                    .catch(error => console.log('Erro ao atualizar AsyncStorage:', error));
+    
+                return notificacoesAtualizadas;
+            });
         } catch (error) {
             console.log('Erro ao cancelar notificação:', error);
         }
@@ -227,7 +260,6 @@ export default function ModalLembretes({ setVisible, selectedPlant }) {
         }
     };
 
-
     const renderItem = ({ item }) => {
         const isSelected = diaSelecionado === item.dia;
 
@@ -254,7 +286,7 @@ export default function ModalLembretes({ setVisible, selectedPlant }) {
                     value={item.ativa}
                     onValueChange={() => toggleAtiva(item.id, item.ativa)}
                 />
-                <TouchableOpacity onPress={() => excluirNotificacao(item.id)}>
+                <TouchableOpacity onPress={() => excluirNotificacao(item._id)}>
                     <Icon name="close-circle" style={{ color: "#db453d", fontSize: 35 }} />
                 </TouchableOpacity>
             </TouchableOpacity>

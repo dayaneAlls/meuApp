@@ -214,7 +214,6 @@ function AuthProvider({ children }) {
             return;
         }
         setUserName(name);
-        console.log(response.data);
     }
 
     async function patchUserPassword(oldPassword, password, passwordConfirmation) {
@@ -234,7 +233,6 @@ function AuthProvider({ children }) {
             return false;
         }
 
-        console.log(response.data);
         return true;
     }
 
@@ -287,7 +285,6 @@ function AuthProvider({ children }) {
             setLoading(false);
             return;
         }
-        console.log(response.data);
     }
 
     async function patchPlant(idPlant, name) {
@@ -304,7 +301,6 @@ function AuthProvider({ children }) {
             setLoading(false);
             return;
         }
-        console.log(response.data);
     }
 
 
@@ -319,15 +315,7 @@ function AuthProvider({ children }) {
     }
 
     async function addLembrete(plantId, novaNotificacao) {
-        console.log({
-            headers: {
-                'Authorization': `Bearer ${userToken}`
-            },
-            body: {
-                ...novaNotificacao
-            }
-        });
-
+        
         const [error, response] = await to(api.post(`auth/plant/${plantId}/care/add`,
             {
                 ...novaNotificacao
@@ -345,8 +333,9 @@ function AuthProvider({ children }) {
         }
     }
 
-    async function listPlantCare() {
-        const [error, response] = await to(api.get(`auth/user/care/list`, {
+    async function listCaresByPlant(idPlant) {
+        
+        const [error, response] = await to(api.get(`auth/plant/${idPlant}/care/list`, {
             headers: {
                 'Authorization': `Bearer ${userToken}`
             }
@@ -355,17 +344,19 @@ function AuthProvider({ children }) {
             console.error('Erro ao buscar cuidados:', error);
             return;
         }
-        console.log(response.data);
         return response;
     }
 
-    async function deleteLembrete(idPlant, idCare) {
+    async function deleteLembrete(idCare, idPlant) {
+        console.log(idPlant,"|", idCare);
+        console.log({ idPlant, idCare })
         const [error, response] = await to(api.delete(`auth/plant/${idPlant}/care/${idCare}`, {
             headers: {
                 'Authorization': `Bearer ${userToken}`
             }
         }
         ));
+        
         if (error) {
             console.error('Erro ao deletar lembrete:', error);
             setLoading(false);
@@ -377,7 +368,7 @@ function AuthProvider({ children }) {
         <AuthContext.Provider value={{
             signed: !!user, userName, userEmail, loading,
             signUp, signOut, signIn, patchUserName, patchUserPassword, recuperarSenha, cadastrar, codeSubmit, addNewPlant, listPlants,
-            deletePlant, patchPlant, listActivities, addLembrete, deleteLembrete, listPlantCare,
+            deletePlant, patchPlant, listActivities, addLembrete, deleteLembrete, listCaresByPlant,
         }}>
             {children}
         </AuthContext.Provider>
