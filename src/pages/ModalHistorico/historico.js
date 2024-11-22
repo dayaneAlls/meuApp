@@ -4,34 +4,70 @@ import to from "await-to-js";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Picker } from '@react-native-picker/picker';
 import { AuthContext } from "../../contexts/auth";
-import { format, addDays, startOfWeek } from 'date-fns';
-import { pt } from 'date-fns/locale';
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { View, Text, StyleSheet, FlatList, SafeAreaView, TouchableOpacity, ScrollView, Modal, TextInput, } from 'react-native';
 
-export default function ModalHistorico({ setVisible }) {
+export default function ModalHistorico({ selectedPlant ,setVisible }) {
 
-    const dataActivities = [
-        { data: "18/01/2024", hora: "08:00", atividade: "Adubar" },
-        { data: "18/03/2024", hora: "08:00", atividade: "Regar" },
-        { data: "18/04/2024", hora: "08:00", atividade: "Regar" },
-        { data: "19/05/2024", hora: "08:00", atividade: "Regar" },
-        { data: "26/05/2024", hora: "08:00", atividade: "Regar" },
-        { data: "10/08/2024", hora: "08:00", atividade: "Regar" },
-        { data: "11/08/2024", hora: "08:00", atividade: "Adubar" },
-        { data: "18/04/2024", hora: "08:00", atividade: "Regar" },
-        { data: "18/06/2024", hora: "08:00", atividade: "Regar" },
-        { data: "11/08/2024", hora: "08:00", atividade: "Regar" },
-        { data: "18/04/2024", hora: "08:00", atividade: "Adubar" },
-        { data: "18/06/2024", hora: "08:00", atividade: "Regar" },
-        { data: "11/08/2024", hora: "08:00", atividade: "Regar" },
-        { data: "18/04/2024", hora: "08:00", atividade: "Regar" },
-        { data: "18/06/2024", hora: "08:00", atividade: "Regar" },
-        { data: "11/08/2024", hora: "08:00", atividade: "Regar" },
-        { data: "18/04/2024", hora: "08:00", atividade: "Regar" },
-        { data: "18/06/2024", hora: "08:00", atividade: "Regar" },
-    ];
+    const { listActivityCare } = useContext(AuthContext);
+    const [dataActivities, setDataActivities] = useState([]);
+    const [loading, setLoading] = useState(true);
 
+    // Função para buscar atividades da API
+    
+        // const dataActivities = [
+        //     { data: "18/01/2024", hora: "08:00", atividade: "Adubar" },
+        //     { data: "18/03/2024", hora: "08:00", atividade: "Regar" },
+        //     { data: "18/04/2024", hora: "08:00", atividade: "Regar" },
+        //     { data: "19/05/2024", hora: "08:00", atividade: "Regar" },
+        //     { data: "26/05/2024", hora: "08:00", atividade: "Regar" },
+        //     { data: "10/08/2024", hora: "08:00", atividade: "Regar" },
+        //     { data: "11/08/2024", hora: "08:00", atividade: "Adubar" },
+        //     { data: "18/04/2024", hora: "08:00", atividade: "Regar" },
+        //     { data: "18/06/2024", hora: "08:00", atividade: "Regar" },
+        //     { data: "11/08/2024", hora: "08:00", atividade: "Regar" },
+        //     { data: "18/04/2024", hora: "08:00", atividade: "Adubar" },
+        //     { data: "18/06/2024", hora: "08:00", atividade: "Regar" },
+        //     { data: "11/08/2024", hora: "08:00", atividade: "Regar" },
+        //     { data: "18/04/2024", hora: "08:00", atividade: "Regar" },
+        //     { data: "18/06/2024", hora: "08:00", atividade: "Regar" },
+        //     { data: "11/08/2024", hora: "08:00", atividade: "Regar" },
+        //     { data: "18/04/2024", hora: "08:00", atividade: "Regar" },
+        //     { data: "18/06/2024", hora: "08:00", atividade: "Regar" },
+        // ];
+
+        const fetchActivities = async () => {
+            setLoading(true);
+            try {
+                const response = await listActivityCare(selectedPlant._id);
+                console.log(response.data); // Verifique onde os dados estão armazenados
+        
+                if (response.data?.activityCareList) {
+                    const adaptedData = adaptApiResponse(response.data.activityCareList); // Passe apenas o array para adaptar
+                    setDataActivities(adaptedData);
+                } else {
+                    console.warn('Dados inválidos recebidos da API:', response.data);
+                    setDataActivities([]);
+                }
+            } catch (error) {
+                console.error('Erro ao carregar atividades:', error);
+                setDataActivities([]);
+            } finally {
+                setLoading(false);
+            }
+        };
+        
+        useEffect(() => {
+            fetchActivities();
+        }, []);
+
+        const adaptApiResponse = (activityCareList) => {
+            return activityCareList.map((item) => ({
+                data: `${item.dia.padStart(2, '0')}/${item.mes.padStart(2, '0')}/${item.ano}`,
+                hora: `${item.hora.padStart(2, '0')}:${item.minuto.padStart(2, '0')}`,
+                atividade: `Código ${item.ActivityCareCode}`, // Personalize aqui conforme necessário
+            }));
+        };
     // Função para agrupar as datas por mês e ano
     const groupByMonth = (data) => {
         const grouped = data.reduce((acc, item) => {
@@ -52,7 +88,7 @@ export default function ModalHistorico({ setVisible }) {
             const [monthB, yearB] = b.split('/').map(Number);
 
             return yearA - yearB || monthA - monthB;
-        });
+        }); 
 
         // Retornar o objeto ordenado
         const sortedGrouped = {};
@@ -94,10 +130,12 @@ export default function ModalHistorico({ setVisible }) {
             </View>
         );
     };
+    // const activitiesGrouped = groupByMonth(dataActivities);
+    const activitiesGrouped = groupByMonth(Array.isArray(dataActivities) ? dataActivities : []);
 
-    const activitiesGrouped = groupByMonth(dataActivities);
     const flatListData = prepareFlatListData(activitiesGrouped);
 
+    
     return (
         <SafeAreaView style={styles.modalContainer}>
             <View style={styles.modalHeader}>

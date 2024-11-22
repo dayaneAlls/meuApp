@@ -14,7 +14,7 @@ export default function ModalLembretes({ setVisible, selectedPlant }) {
     const [modalAddRegistro, setModalAddRegistro] = useState(false);
     const [diaSelecionado, setDiaSelecionado] = useState(null);
     const [frequencia, setFrequencia] = useState('');
-    const { listActivities, deleteLembrete, listCaresByPlant, addLembrete } = useContext(AuthContext);
+    const { listActivities, deleteLembrete, listCaresByPlant, addLembrete, registerActivity } = useContext(AuthContext);
     const [activities, setActivities] = useState([]);
     const [atividade, setAtividade] = useState('');
     const [notificationId, setNotificatioId] = useState([]);
@@ -56,8 +56,8 @@ export default function ModalLembretes({ setVisible, selectedPlant }) {
 
     async function handleRegister() {
 
-        setDia(dia);
-        setMes(mes);
+        console.log(notificationId._id, dia, mes, anoAtual, hora, minuto);
+        registerActivity(notificationId._id, dia, mes, anoAtual, minuto, hora);
         setModalAddRegistro(false);
     }
 
@@ -123,7 +123,7 @@ export default function ModalLembretes({ setVisible, selectedPlant }) {
             repeats: true,
             ...(frequencia === 'Semanalmente' && { weekday: getWeekday(diaSelecionado) }),
         };
-
+    
         try {
             const notificationId = await Notifications.scheduleNotificationAsync({
                 content: {
@@ -132,6 +132,7 @@ export default function ModalLembretes({ setVisible, selectedPlant }) {
                 },
                 trigger,
             });
+    
             const novaNotificacao = {
                 id: notificationId,
                 hora: horaSelecionada,
@@ -139,27 +140,31 @@ export default function ModalLembretes({ setVisible, selectedPlant }) {
                 frequencia,
                 dia: diaSelecionado,
                 atividade,
+                plantaId: selectedPlant._id, // Vincula à planta atual
                 ativa: true,
             };
-
+    
             addLembrete(selectedPlant._id, novaNotificacao);
-
-            // Recupera as notificações atuais
+    
+            // Recupera todas as notificações salvas
             const armazenadas = await AsyncStorage.getItem('notificacoes');
             const notificacoes = armazenadas ? JSON.parse(armazenadas) : [];
-
+    
             // Adiciona a nova notificação à lista
-            notificacoes.push(novaNotificacao);
-
+            const notificacoesAtualizadas = [...notificacoes, novaNotificacao];
+    
             // Salva a lista atualizada
-            await AsyncStorage.setItem('notificacoes', JSON.stringify(notificacoes));
-
-            // Confirmação do conteúdo salvo
-            const confirmacao = await AsyncStorage.getItem('notificacoes');
-
-            setNotificacoes(notificacoes);
+            await AsyncStorage.setItem('notificacoes', JSON.stringify(notificacoesAtualizadas));
+    
+            // Filtra as notificações para incluir apenas as da planta selecionada
+            const notificacoesFiltradas = notificacoesAtualizadas.filter(
+                notificacao => notificacao.plantaId === selectedPlant._id
+            );
+    
+            // Atualiza o estado apenas com as notificações da planta selecionada
+            setNotificacoes(notificacoesFiltradas);
             setModalAdicionar(false);
-
+    
         } catch (error) {
             console.error("Erro ao agendar notificação:", error);
         }

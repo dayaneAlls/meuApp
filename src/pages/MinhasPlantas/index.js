@@ -244,7 +244,7 @@ export default function MinhasPlantas() {
                     transparent={true}
                     visible={modalHistorico}
                 >
-                    <ModalHistorico setVisible={() => { setModalCuidados(true); setModalHistorico(false); }}></ModalHistorico>
+                    <ModalHistorico selectedPlant={selectedPlant} setVisible={() => { setModalCuidados(true); setModalHistorico(false); }}></ModalHistorico>
                 </Modal>
             </SafeAreaView >
         </>

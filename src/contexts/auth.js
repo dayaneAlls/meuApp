@@ -348,8 +348,6 @@ function AuthProvider({ children }) {
     }
 
     async function deleteLembrete(idCare, idPlant) {
-        console.log(idPlant,"|", idCare);
-        console.log({ idPlant, idCare })
         const [error, response] = await to(api.delete(`auth/plant/${idPlant}/care/${idCare}`, {
             headers: {
                 'Authorization': `Bearer ${userToken}`
@@ -364,11 +362,47 @@ function AuthProvider({ children }) {
         }
     }
 
+    async function registerActivity(idCare, dia, mes, ano, minuto, hora) {
+        
+        const [error, response] = await to(api.post(`auth/plant/care/${idCare}/activity-care`,
+            {
+                dia,
+                mes,
+                ano,
+                minuto,
+                hora
+            },
+            {
+                headers: {
+                    'Authorization': `Bearer ${userToken}`
+                }
+            }
+        ));
+        if (error) {
+            console.error('Erro ao registrar atividade:', error);
+            setLoading(false);
+            return;
+        }
+    }
+    
+    async function listActivityCare(idPlant) {
+        const [error, response] = await to(api.get(`auth/plant/${idPlant}/activity-care`, {
+            headers: {
+                'Authorization': `Bearer ${userToken}`
+            }
+        }));
+        if (error) {
+            console.error('Erro ao registros de atividade:', error);
+            return;
+        }
+        return response;
+    }
+
     return (
         <AuthContext.Provider value={{
             signed: !!user, userName, userEmail, loading,
             signUp, signOut, signIn, patchUserName, patchUserPassword, recuperarSenha, cadastrar, codeSubmit, addNewPlant, listPlants,
-            deletePlant, patchPlant, listActivities, addLembrete, deleteLembrete, listCaresByPlant,
+            deletePlant, patchPlant, listActivities, addLembrete, deleteLembrete, listCaresByPlant, registerActivity, listActivityCare
         }}>
             {children}
         </AuthContext.Provider>
