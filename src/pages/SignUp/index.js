@@ -8,10 +8,13 @@ import {
   TouchableOpacity,
   Text,
   Image,
+  Modal,
+  SafeAreaView,
   ImageBackground,
   ActivityIndicator,
 } from "react-native";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { AuthContext } from "../../contexts/auth";
 import { LinearGradient } from "expo-linear-gradient";
 
@@ -22,6 +25,7 @@ export default function SignUp() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [passwordConfirmation, setPasswordConfirmation] = useState("");
+  const [messageBox, setMessageBox] = useState(true);
 
   function handleSignUp() {
     if (user === "" || email === "" || password === "" || passwordConfirmation === "") {
@@ -128,6 +132,30 @@ export default function SignUp() {
             </TouchableOpacity>
           </LinearGradient>
         </View>
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={messageBox}
+          onRequestClose={() => setMessageBox(false)}>
+          <SafeAreaView style={styles.modalContainer}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Alterações realizadas</Text>
+            </View>
+            <View style={{ padding: 15, justifyContent: 'center', alignItems: 'center', flex: 1 }}>
+              <View style={styles.modalMessageContainer}>
+                <View style={styles.modalMessageContent}>
+                  <Icon name="check-circle" style={styles.icon2}></Icon>
+                  <Text style={styles.modalMessageText}>Cadastro efetuado com sucesso!</Text>
+                  <View style={styles.buttonMessageContainer}>
+                    <TouchableOpacity style={styles.buttonMessage} onPress={() => { setMessageBox(false); }}>
+                      <Text style={styles.buttonMessageText}>Ok</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </View>
+            </View>
+          </SafeAreaView>
+        </Modal>
       </ImageBackground>
     </KeyboardAvoidingView>
   );
@@ -198,5 +226,67 @@ const styles = StyleSheet.create({
     shadowColor: "black",
     marginTop: -80,
     marginBottom: 35,
+  },
+  modalContainer: {
+    backgroundColor: '#dfe8df', //#faf2ed
+    flex: 1,
+  },
+  modalHeader: {
+    backgroundColor: "#3a4d39",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-start",
+    height: 60,
+  },
+  modalTitle: {
+    fontSize: 22,
+    paddingHorizontal: 20,
+    color: '#ffffff',
+    fontWeight: "bold",
+    textAlign: "center"
+  },
+  modalMessageContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#dfe8df'
+  },
+  modalMessageContent: {
+    width: '100%',
+    backgroundColor: '#dfe8df',
+    borderRadius: 10,
+    padding: 20,
+    marginTop: 50,
+    alignItems: 'center',
+  },
+  modalMessageText: {
+    fontSize: 30,
+    marginBottom: 20,
+    textAlign: 'center',
+    fontWeight: "bold",
+  },
+  buttonMessageContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+  },
+  buttonMessage: {
+    backgroundColor: '#3a4d39',
+    padding: 10,
+    borderRadius: 10,
+    marginHorizontal: 5,
+    alignItems: 'center',
+    shadowColor: 'black',
+    elevation: 5,
+  },
+  buttonMessageText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 20,
+  },
+  icon2: {
+    fontSize: 180,
+    color: '#7ccaeb',
+    padding: 50,
   },
 });

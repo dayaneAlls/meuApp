@@ -62,7 +62,7 @@ export default function ConfigModalAlterarSenha({ setVisible }) {
                     <TouchableOpacity onPress={() => setVisible(false)}>
                         <Icon name="arrow-left" style={styles.iconVoltar} />
                     </TouchableOpacity>
-                    <Text style={styles.modalTitle}>Cadastrar nova senha </Text>
+                    <Text style={styles.modalTitle}>Cadastrar Nova Senha </Text>
                 </View>
                 <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
                     <LinearGradient style={{ padding: 20, justifyContent: 'center', alignItems: 'center', flex: 1 }}

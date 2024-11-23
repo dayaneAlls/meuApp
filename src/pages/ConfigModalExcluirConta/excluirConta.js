@@ -6,19 +6,17 @@ import { LinearGradient } from "expo-linear-gradient";
 
 export default function ConfigModalExcluirConta({ setVisible }) {
 
-    const [name, setName] = useState('');
     const [email, setEmail] = useState('');
-    const { changeNameUser, loading, SignOut } = useContext(AuthContext);
-    const [confirmExcluir, setConfirmExcluir] = useState(false);
+    const { loading, SignOut } = useContext(AuthContext);
     const [messageBox, setMessageBox] = useState(false);
 
-    async function handleChangeNamePlant() {
-        if (namePlant === "") {
-            alert("Por favor digite o nome!");
-            return;
-        }
-        changeUserName(name);
-        setVisible(false);
+    async function handleDeleteAccount() {
+        // if (email === "") {
+        //     alert("Por favor digite o nome!");
+        //     return;
+        // }
+        //changeUserName(name);
+        setEmail("");
         setMessageBox(true);
     }
 
@@ -34,26 +32,44 @@ export default function ConfigModalExcluirConta({ setVisible }) {
                     </TouchableOpacity>
                     <Text style={styles.modalTitle}>Excluir Conta </Text>
                 </View>
-                <View style={styles.modalExcluirContainer}>
-                    <View style={styles.modalExcluirContent}>
-                        <Text style={styles.modalExcluirText}>Você tem certeza que deseja excluir sua conta permanentemente?</Text>
-                        <View style={styles.buttonExcluirContainer}>
-                            <TouchableOpacity
-                                style={styles.buttonExcluir}
-                                onPress={() => setMessageBox(true)}
-                            >
-                                {loading ? (
-                                    <ActivityIndicator size={50} color="#fff" />
-                                ) : (
-                                    <Text style={styles.buttonExcluirText}>Excluir</Text>
-                                )}
-                            </TouchableOpacity>
-                            <TouchableOpacity style={styles.buttonExcluir} onPress={() => { setConfirmExcluir(false); setVisible(false) }}>
-                                <Text style={styles.buttonExcluirText}>Cancelar</Text>
-                            </TouchableOpacity>
+                <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+                    <LinearGradient
+                        style={{ padding: 20, justifyContent: 'center', alignItems: 'center', flex: 1 }}
+                        colors={['#ede0df', '#dfe8df', '#c3dbbd']}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                    >
+                        <View style={styles.modalAlterarContent}>
+                            <Icon name="account-edit" style={styles.icon} />
+                            <Text style={styles.modalAlterarText}>Digite seu e-mail cadastrado para excluir sua conta permanentemente</Text>
+                            <TextInput
+                                style={styles.input}
+                                placeholder="E-mail"
+                                value={email}
+                                onChangeText={(text) => setEmail(text)}
+                                placeholderTextColor="#3a4d39"
+                            />
+                            <View style={styles.buttonAlterarContainer}>
+                                <TouchableOpacity
+                                    style={styles.buttonAlterar}
+                                    onPress={() => handleDeleteAccount()}
+                                >
+                                    {loading ? (
+                                        <ActivityIndicator size={50} color="#fff" />
+                                    ) : (
+                                        <Text style={styles.buttonAlterarText}>Salvar</Text>
+                                    )}
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                    style={styles.buttonAlterar}
+                                    onPress={() => setVisible(false)}
+                                >
+                                    <Text style={styles.buttonAlterarText}>Cancelar</Text>
+                                </TouchableOpacity>
+                            </View>
                         </View>
-                    </View>
-                </View>
+                    </LinearGradient>
+                </ScrollView>
                 <Modal
                     animationType="slide"
                     transparent={true}
@@ -69,7 +85,7 @@ export default function ConfigModalExcluirConta({ setVisible }) {
                                     <Icon name="check-circle" style={styles.icon2}></Icon>
                                     <Text style={styles.modalMessageText}>Conta excluída com sucesso!</Text>
                                     <View style={styles.buttonMessageContainer}>
-                                        <TouchableOpacity style={styles.buttonMessage} onPress={() => { setVisible(false) }}>
+                                        <TouchableOpacity style={styles.buttonMessage} onPress={() => { setVisible(false); SignOut(); }}>
                                             <Text style={styles.buttonMessageText}>Ok</Text>
                                         </TouchableOpacity>
                                     </View>

@@ -5,13 +5,12 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 export const AvatarContext = createContext({});
 
 export const avatarOptions = [
-    { id: 1, image: require('../img/avatares/1.png') },
-    { id: 2, image: require('../img/avatares/2.png') },
-    { id: 3, image: require('../img/avatares/3.png') },
-    { id: 4, image: require('../img/avatares/4.png') },
-    { id: 5, image: require('../img/avatares/5.png') },
-    { id: 6, image: require('../img/avatares/6.png') },
-    { id: 7, image: require('../img/avatares/7.png') },
+    { id: 1, image: require('../img/avatares1/1.png') },
+    { id: 2, image: require('../img/avatares1/2.png') },
+    { id: 3, image: require('../img/avatares1/3.png') },
+    { id: 4, image: require('../img/avatares1/4.png') },
+    { id: 5, image: require('../img/avatares1/5.png') },
+    { id: 6, image: require('../img/avatares1/6.png') },
 ];
 
 export function AvatarProvider({ children }) {

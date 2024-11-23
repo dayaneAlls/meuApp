@@ -20,7 +20,7 @@ export default function EsqueceuSenha() {
     const [hidePass, setHidePass] = useState(true);
     const [hidePass2, setHidePass2] = useState(true);
     const [enviarCodigo, setEnviarCodigo] = useState(false);
-    const [novaSenha, setNovaSenha] = useState(false);
+    const [novaSenha, setNovaSenha] = useState(true);
     const { recuperarSenha, loadingAuth } = useContext(AuthContext);
     const { codeSubmit } = useContext(AuthContext);
     const { cadastrar } = useContext(AuthContext);
@@ -118,39 +118,47 @@ export default function EsqueceuSenha() {
                         onRequestClose={() => setEnviarCodigo(false)}
                     >
                         <View style={styles.modalBackground}>
-                            <LinearGradient style={styles.modalContainer}
-                                colors={['#f1dbda', '#cbd4ba', '#afcca8']}
-                                start={{ x: 0, y: 0 }} // Ponto inicial do gradiente
-                                end={{ x: 1, y: 1 }} >
-                                <View style={styles.container}>
-                                    <Icon name="lock-open" style={styles.icon2} />
-                                    <Text style={styles.texto1}>Código de verificação</Text>
-                                    <Text style={styles.texto2}>Por favor, insira o código enviado para o seu e-mail.</Text>
-                                    <View>
-                                        <TextInput
-                                            style={styles.input}
-                                            placeholder="Insira o código"
-                                            value={codigo}
-                                            onChangeText={(text) => setCodigo(text)}
-                                            placeholderTextColor="#3a4d39"
-                                            keyboardType="number-pad"
-                                            maxLength={6}
-                                        ></TextInput>
+                            <View style={styles.modalHeader}>
+                                <TouchableOpacity onPress={() => setEnviarCodigo(false)}>
+                                    <Icon name="arrow-left" style={styles.iconVoltar} />
+                                </TouchableOpacity>
+                                <Text style={styles.modalTitle}>Voltar </Text>
+                            </View>
+                            <View style={[styles.container, { flex: 1 }]}>
+                                <LinearGradient style={styles.modalContainer}
+                                    colors={['#f1dbda', '#cbd4ba', '#afcca8']}
+                                    start={{ x: 0, y: 0 }} // Ponto inicial do gradiente
+                                    end={{ x: 1, y: 1 }} >
+                                    <View style={styles.container}>
+                                        <Icon name="lock-open" style={styles.icon2} />
+                                        <Text style={styles.texto1}>Código de verificação</Text>
+                                        <Text style={styles.texto2}>Por favor, insira o código enviado para o seu e-mail.</Text>
+                                        <View>
+                                            <TextInput
+                                                style={styles.input}
+                                                placeholder="Insira o código"
+                                                value={codigo}
+                                                onChangeText={(text) => setCodigo(text)}
+                                                placeholderTextColor="#3a4d39"
+                                                keyboardType="number-pad"
+                                                maxLength={6}
+                                            ></TextInput>
+                                        </View>
+                                        <LinearGradient style={styles.modalButton}
+                                            colors={['#4e6e4d', '#3a4d39']}
+                                            start={{ x: 1, y: 0 }}
+                                            end={{ x: 0, y: 1 }}>
+                                            <TouchableOpacity onPress={handleCodeSubmit}>
+                                                {loadingAuth ? (
+                                                    <ActivityIndicator size={50} color={"#fff"} />
+                                                ) : (
+                                                    <Text style={styles.modalButtonText}>Verificar</Text>
+                                                )}
+                                            </TouchableOpacity>
+                                        </LinearGradient>
                                     </View>
-                                    <LinearGradient style={styles.modalButton}
-                                        colors={['#4e6e4d', '#3a4d39']}
-                                        start={{ x: 1, y: 0 }}
-                                        end={{ x: 0, y: 1 }}>
-                                        <TouchableOpacity onPress={handleCodeSubmit}>
-                                            {loadingAuth ? (
-                                                <ActivityIndicator size={50} color={"#fff"} />
-                                            ) : (
-                                                <Text style={styles.modalButtonText}>Verificar</Text>
-                                            )}
-                                        </TouchableOpacity>
-                                    </LinearGradient>
-                                </View>
-                            </LinearGradient>
+                                </LinearGradient>
+                            </View>
                         </View>
                     </Modal>
                     <Modal
@@ -160,71 +168,79 @@ export default function EsqueceuSenha() {
                         onRequestClose={() => setNovaSenha(false)}
                     >
                         <View style={styles.modalBackground}>
-                            <LinearGradient style={styles.modalContainer}
-                                colors={['#f1dbda', '#cbd4ba', '#afcca8']}
-                                start={{ x: 0, y: 0 }} // Ponto inicial do gradiente
-                                end={{ x: 1, y: 1 }} >
-                                <View style={styles.container}>
-                                    <Icon name="lock-open" style={styles.icon2} />
-                                    <Text style={styles.texto2}>Por favor, cadastre sua nova senha.</Text>
-                                    <View>
-                                        <TextInput
-                                            style={styles.input}
-                                            placeholder="Nova senha"
-                                            value={password}
-                                            onChangeText={(text) => setPassword(text)}
-                                            placeholderTextColor="#3a4d39"
-                                            secureTextEntry={hidePass}
-                                        ></TextInput>
-                                        <TouchableOpacity onPress={() => setHidePass(!hidePass)}>
-                                            {hidePass ? (
-                                                <MaterialIcons
-                                                    name="visibility"
-                                                    style={styles.iconPlacePassword}
-                                                />
-                                            ) : (
-                                                <MaterialIcons
-                                                    name="visibility-off"
-                                                    style={styles.iconPlacePassword}
-                                                />
-                                            )}
-                                        </TouchableOpacity>
-                                        <TextInput
-                                            style={styles.input}
-                                            placeholder="Confirmar nova senha"
-                                            value={password2}
-                                            onChangeText={(text) => setPassword2(text)}
-                                            placeholderTextColor="#3a4d39"
-                                            secureTextEntry={hidePass2}
-                                        ></TextInput>
-                                        <TouchableOpacity onPress={() => setHidePass2(!hidePass2)}>
-                                            {hidePass2 ? (
-                                                <MaterialIcons
-                                                    name="visibility"
-                                                    style={styles.iconPlacePassword}
-                                                />
-                                            ) : (
-                                                <MaterialIcons
-                                                    name="visibility-off"
-                                                    style={styles.iconPlacePassword}
-                                                />
-                                            )}
-                                        </TouchableOpacity>
+                            <View style={styles.modalHeader}>
+                                <TouchableOpacity onPress={() => setNovaSenha(false)}>
+                                    <Icon name="arrow-left" style={styles.iconVoltar} />
+                                </TouchableOpacity>
+                                <Text style={styles.modalTitle}>Voltar </Text>
+                            </View>
+                            <View style={[styles.container, { flex: 1 }]}>
+                                <LinearGradient style={styles.modalContainer}
+                                    colors={['#f1dbda', '#cbd4ba', '#afcca8']}
+                                    start={{ x: 0, y: 0 }} // Ponto inicial do gradiente
+                                    end={{ x: 1, y: 1 }} >
+                                    <View style={styles.container}>
+                                        <Icon name="lock-open" style={styles.icon2} />
+                                        <Text style={styles.texto2}>Por favor, cadastre sua nova senha.</Text>
+                                        <View>
+                                            <TextInput
+                                                style={styles.input}
+                                                placeholder="Nova senha"
+                                                value={password}
+                                                onChangeText={(text) => setPassword(text)}
+                                                placeholderTextColor="#3a4d39"
+                                                secureTextEntry={hidePass}
+                                            ></TextInput>
+                                            <TouchableOpacity onPress={() => setHidePass(!hidePass)}>
+                                                {hidePass ? (
+                                                    <MaterialIcons
+                                                        name="visibility"
+                                                        style={styles.iconPlacePassword}
+                                                    />
+                                                ) : (
+                                                    <MaterialIcons
+                                                        name="visibility-off"
+                                                        style={styles.iconPlacePassword}
+                                                    />
+                                                )}
+                                            </TouchableOpacity>
+                                            <TextInput
+                                                style={styles.input}
+                                                placeholder="Confirmar nova senha"
+                                                value={password2}
+                                                onChangeText={(text) => setPassword2(text)}
+                                                placeholderTextColor="#3a4d39"
+                                                secureTextEntry={hidePass2}
+                                            ></TextInput>
+                                            <TouchableOpacity onPress={() => setHidePass2(!hidePass2)}>
+                                                {hidePass2 ? (
+                                                    <MaterialIcons
+                                                        name="visibility"
+                                                        style={styles.iconPlacePassword}
+                                                    />
+                                                ) : (
+                                                    <MaterialIcons
+                                                        name="visibility-off"
+                                                        style={styles.iconPlacePassword}
+                                                    />
+                                                )}
+                                            </TouchableOpacity>
+                                        </View>
+                                        <LinearGradient style={styles.modalButton}
+                                            colors={['#4e6e4d', '#3a4d39']}
+                                            start={{ x: 1, y: 0 }} // Ponto inicial do gradiente
+                                            end={{ x: 0, y: 1 }}>
+                                            <TouchableOpacity onPress={handleCadastrar}>
+                                                {loadingAuth ? (
+                                                    <ActivityIndicator size={50} color={"#fff"} />
+                                                ) : (
+                                                    <Text style={styles.modalButtonText}>Cadastrar</Text>
+                                                )}
+                                            </TouchableOpacity>
+                                        </LinearGradient>
                                     </View>
-                                    <LinearGradient style={styles.modalButton}
-                                        colors={['#4e6e4d', '#3a4d39']}
-                                        start={{ x: 1, y: 0 }} // Ponto inicial do gradiente
-                                        end={{ x: 0, y: 1 }}>
-                                        <TouchableOpacity onPress={handleCadastrar}>
-                                            {loadingAuth ? (
-                                                <ActivityIndicator size={50} color={"#fff"} />
-                                            ) : (
-                                                <Text style={styles.modalButtonText}>Cadastrar</Text>
-                                            )}
-                                        </TouchableOpacity>
-                                    </LinearGradient>
-                                </View>
-                            </LinearGradient>
+                                </LinearGradient>
+                            </View>
                         </View>
                     </Modal>
                 </View>
@@ -237,6 +253,24 @@ const styles = StyleSheet.create({
     container: {
         alignItems: 'center',
         justifyContent: "center",
+    },
+    iconVoltar: {
+        fontSize: 30,
+        marginLeft: 15,
+    },
+    modalTitle: {
+        fontSize: 22,
+        paddingHorizontal: 20,
+        fontWeight: "bold",
+        textAlign: "center"
+    },
+    modalHeader: {
+        backgroundColor: "rgba(115,144,114,.8)",
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "flex-start",
+        height: 55,
+        elevation: 3
     },
     btnEnviar: {
         backgroundColor: "#3a4d39",
@@ -307,18 +341,14 @@ const styles = StyleSheet.create({
         fontSize: 25,
         color: "#3a4d39",
     },
-
     modalBackground: {
         flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
         backgroundColor: 'rgba(240, 242, 235, 0.9)', // Fundo semi-transparente
     },
     modalContainer: {
         width: 350,
         padding: 20,
         borderRadius: 15,
-        alignItems: 'center',
         borderColor: '#33605a',
         borderWidth: 2,
         shadowColor: 'black',

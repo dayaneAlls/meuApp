@@ -142,7 +142,7 @@ export default function MinhasPlantas() {
                     onRequestClose={() => setModalAlterarNomePlanta(false)}>
                     <View style={styles.modalExcluirContainer}>
                         <View style={styles.modalExcluirContent}>
-                            <Text style={styles.modalExcluirText}>Insira o novo nome da sua planta</Text>
+                            <Text style={styles.modalExcluirText}>Digite o novo nome da sua planta</Text>
                             <TextInput
                                 style={styles.input}
                                 placeholder="Nome"
@@ -189,7 +189,7 @@ export default function MinhasPlantas() {
                                         source={{ uri: selectedPlant.url_imagem }}
                                         style={styles.modalImage}
                                     />
-                                    <Text style={styles.textNamePlant}>{plantInfo.name}</Text>
+                                    <Text style={styles.textNamePlant}>{selectedPlant.nome}</Text>
                                 </View>
                                 <View style={styles.viewDetails}>
                                     <View style={styles.viewDescricao}>
@@ -244,7 +244,7 @@ export default function MinhasPlantas() {
                     transparent={true}
                     visible={modalHistorico}
                 >
-                    <ModalHistorico setVisible={() => { setModalCuidados(true); setModalHistorico(false); }}></ModalHistorico>
+                    <ModalHistorico selectedPlant={selectedPlant} setVisible={() => { setModalCuidados(true); setModalHistorico(false); }}></ModalHistorico>
                 </Modal>
             </SafeAreaView >
         </>

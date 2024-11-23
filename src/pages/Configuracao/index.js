@@ -38,8 +38,11 @@ export default function Configuracao() {
                 <View style={styles.viewContainer}>
                     <View style={styles.viewPersona}>
                         <View style={styles.personaInner}>
-                            {avatar && <Image source={avatar} style={styles.avatar}
-                            ></Image>}
+                            {avatar ? (
+                                <Image source={avatar} style={styles.avatar} />
+                            ) : (
+                                <Icon name="account-circle" size={170 * scaleFactor} style={styles.avatarIcon} />
+                            )}
                             <Text style={styles.userName}>{userName}</Text>
                             <Text style={styles.userEmail}>{userEmail}</Text>
                         </View>
@@ -185,5 +188,9 @@ const styles = StyleSheet.create({
         fontSize: 15 * scaleFactor,
         fontWeight: 'bold',
         marginBottom: 15 * scaleFactor,
+    },
+    avatarIcon: {
+        color: '#a7c5d4', // Cor do ícone
+        marginBottom: 8, // Espaçamento entre o ícone e o texto
     },
 })

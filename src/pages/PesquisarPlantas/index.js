@@ -130,7 +130,7 @@ export default function PesquisarPlantas() {
                                     <TouchableOpacity onPress={() => setModalPlant(false)}>
                                         <Icon name="arrow-left" style={styles.iconVoltar} />
                                     </TouchableOpacity>
-                                    <Text style={styles.modalTitle}>Informações da planta</Text>
+                                    <Text style={styles.modalTitle}>Informações da Planta</Text>
                                 </View>
                                 <ScrollView style={{ padding: 20 }}>
                                     <View style={styles.modalCard}>

@@ -1,9 +1,12 @@
 import React, { useContext, useState, useEffect } from "react";
-import { Text, StyleSheet, View, Image, TouchableOpacity, Modal } from "react-native";
+import { Text, StyleSheet, View, Image, TouchableOpacity, Modal, Dimensions, } from "react-native";
 import { DrawerItemList, DrawerContentScrollView, DrawerItem } from "@react-navigation/drawer";
-import Icon from 'react-native-vector-icons/MaterialIcons';
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { AuthContext } from "../../contexts/auth";
 import { useAvatar } from '../../contextAvatar/avatarContext';
+
+const { height, width } = Dimensions.get('window');
+const scaleFactor = height / 800; // Baseado em uma tela de altura 800 como referência
 
 export default function DrawerLog(props) {
     const { signOut, userName } = useContext(AuthContext);
@@ -13,7 +16,11 @@ export default function DrawerLog(props) {
     return (
         <DrawerContentScrollView {...props}>
             <View style={styles.container}>
-                {avatar && <Image source={avatar} style={styles.avatar}></Image>}
+                {avatar ? (
+                    <Image source={avatar} style={styles.avatar} />
+                ) : (
+                    <Icon name="account-circle" size={170 * scaleFactor} style={styles.avatarIcon} />
+                )}
                 <Text style={{ color: '#f0f2ff', fontSize: 20, paddingTop: 20, fontWeight: 'bold' }}>Bem-vindo(a)!</Text>
                 <Text style={{ color: '#f0f2ff', fontSize: 30, fontWeight: 'bold', marginBottom: 30 }}>{userName}</Text>
             </View>
@@ -97,5 +104,9 @@ const styles = StyleSheet.create({
         width: 170,
         height: 170,
 
+    },
+    avatarIcon: {
+        color: '#a7c5d4', // Cor do ícone
+        marginBottom: 8, // Espaçamento entre o ícone e o texto
     },
 })

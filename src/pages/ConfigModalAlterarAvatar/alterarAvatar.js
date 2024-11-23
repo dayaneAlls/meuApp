@@ -33,7 +33,7 @@ export default function ConfigModalAlterarAvatar({ setVisible }) {
                 <TouchableOpacity onPress={() => setVisible(false)}>
                     <Icon name="arrow-left" style={styles.iconVoltar} />
                 </TouchableOpacity>
-                <Text style={styles.modalTitle}>Alterar avatar </Text>
+                <Text style={styles.modalTitle}>Alterar Avatar </Text>
             </View>
             <View style={{ height: "92%", justifyContent: "center" }}>
                 <Text style={styles.textoSelecionar}>Selecione uma imagem para alterar a foto do perfil</Text>
